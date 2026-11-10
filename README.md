@@ -29,6 +29,18 @@ Ablauf einer Änderung: lokal bearbeiten, committen, `git push`. Auf dem Server 
 
 Sofort aktualisieren statt auf cron zu warten: `/opt/lernplattform/scripts/update.sh`. Das Log liegt in `/opt/lernplattform/update.log`.
 
+### Cache und Versionierung
+
+Cloudflare ersetzt den Cache-Header von nginx und lässt Browser JS und CSS bis zu 4 Stunden ungeprüft aus dem Cache laden. Damit nach einem Update trotzdem niemand alte Dateien bekommt, verweist `index.html` auf `v/dev/…`. Das Update-Skript ersetzt `dev` durch den Commit-Hash, zum Beispiel `v/7dcb3f7/js/app.js`. nginx liefert jede Datei unter `/v/<beliebig>/` aus dem normalen Pfad aus und erlaubt dafür unbegrenztes Caching. `index.html` selbst wird nie gecacht. Jede neue Version hat also neue Adressen, und alte Stände im Cache spielen keine Rolle mehr.
+
+Neue Dateien, die `index.html` direkt einbindet, müssen deshalb ebenfalls mit `v/dev/` beginnen. Dateien, die per `import` oder `url()` relativ geladen werden, bekommen den Präfix automatisch.
+
+### Lokal testen
+
+`docker compose up -d` im Projektordner, dann `http://localhost:3005` öffnen. Ein einfacher Dateiserver wie `python -m http.server` reicht nicht, weil er den Pfad `/v/…` nicht kennt.
+
+Vor jedem Push: `node tests/check.mjs`. Das prüft alle Fragen (gültige Antworten, Erklärungen, eindeutige IDs) und lässt jeden Rechen-Generator 600 Aufgaben gegen seine eigene Lösung rechnen.
+
 Wichtig: Auf dem Server nichts direkt ändern. Das Update-Skript setzt den Stand hart auf `origin/main` zurück, lokale Änderungen dort gehen verloren.
 
 ## Aufbau

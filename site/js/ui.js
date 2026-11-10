@@ -2,6 +2,9 @@
 export function h(tag, attrs = {}, ...children) {
   const el = document.createElement(tag);
   for (const [k, v] of Object.entries(attrs || {})) {
+    // data-* und aria-* sind Textwerte: true/false müssen als "true"/"false" ankommen.
+    // Nur echte HTML-Schalter (disabled, autofocus …) werden bei false weggelassen.
+    if (k.startsWith('data-') || k.startsWith('aria-')) { if (v != null) el.setAttribute(k, String(v)); continue; }
     if (v == null || v === false) continue;
     if (k === 'class') el.className = v;
     else if (k === 'html') el.innerHTML = v;
