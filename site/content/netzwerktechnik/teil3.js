@@ -8,7 +8,8 @@ export const routing = {
     {
       h: 'Was ein Router macht',
       html: `<p>Ein Router verbindet verschiedene Netze miteinander. Er entscheidet anhand der <b>Ziel-IP-Adresse</b>, wohin ein Paket als Nächstes geschickt wird. Damit arbeitet er auf Schicht 3 des OSI-Modells. Für die Geräte im lokalen Netz ist der Router das <b>Default-Gateway</b>: das Tor nach draußen.</p>
-      <p>Technisch ist ein Router ein spezialisierter Computer mit Prozessor, Betriebssystem, Arbeitsspeicher und Flash-Speicher.</p>`,
+      <p>Technisch ist ein Router ein spezialisierter Computer mit Prozessor, Betriebssystem, Arbeitsspeicher und Flash-Speicher. Er kann auch Netze mit ganz unterschiedlicher Technik verbinden, zum Beispiel ein Ethernet-LAN mit einem DSL-Anschluss. Router werden außerdem eingesetzt, um Standorte über VPN sicher miteinander zu koppeln.</p>
+      <div class="merke"><b>Switch oder Router?</b> Ein Switch leitet Frames <b>innerhalb</b> eines Netzes weiter und arbeitet mit MAC-Adressen auf Schicht 2. Ein Router leitet Pakete <b>zwischen</b> verschiedenen Netzen weiter und arbeitet mit IP-Adressen auf Schicht 3.</div>`,
     },
     {
       h: 'Die Entscheidung beim Absender',
@@ -58,6 +59,7 @@ export const routing = {
       html: `<p>Man unterscheidet zwei Arten:</p>
       <p><b>Distance Vector</b>: Jeder Router schickt seine Routing-Tabelle regelmäßig an seine direkten Nachbarn. Man kann es sich so merken: „Erzähl deinen Nachbarn, wie die Welt für dich aussieht.“ Beispiele sind RIP und EIGRP.</p>
       <p><b>Link State</b>: Jeder Router schickt Informationen über seine eigenen Verbindungen (Link State Advertisements) an alle anderen Router. So kennt jeder Router das ganze Netz und berechnet mit dem Shortest-Path-First-Algorithmus selbst die besten Wege. Merksatz: „Erzähl der ganzen Welt, wer deine Nachbarn sind.“ Beispiele sind OSPF und IS-IS.</p>
+      <p>Weil bei Link State jeder Router das ganze Netz kennt, reagiert er schneller auf Änderungen. Man sagt: Link-State-Protokolle <b>konvergieren schneller</b>. Konvergenz heißt, dass alle Router nach einer Änderung wieder dasselbe, richtige Bild vom Netz haben. Dafür brauchen sie mehr Arbeitsspeicher und Rechenleistung.</p>
       <table><tr><th>Protokoll</th><th>Art</th><th>Besonderheiten</th></tr>
       <tr><td>RIP</td><td>Distance Vector</td><td>Metrik ist die Anzahl der Hops. Höchstens 15 Hops, 16 bedeutet „nicht erreichbar“. Austausch alle 30 Sekunden. Erst RIPv2 überträgt Subnetzmasken.</td></tr>
       <tr><td>OSPF</td><td>Link State</td><td>Schleifenfrei, unterstützt VLSM und CIDR, für große Netze geeignet, gliedert das Netz in Bereiche (Areas).</td></tr>
@@ -85,6 +87,8 @@ export const routing = {
     { id: 'r18', type: 'mc', q: 'Was bedeutet der Eintrag <span class="mono">S 10.10.10.16/29 [1/0] via 10.0.0.13</span>?', options: ['Statische Route mit AD 1 und Metrik 0, nächster Router ist 10.0.0.13', 'Subnetz 10.0.0.13 mit einem Host', 'OSPF-Route mit den Kosten 1', 'Direkt verbunden über Interface 1/0'], answer: 0, explain: 'In der eckigen Klammer stehen administrative Distanz und Metrik. Statische Routen haben die AD 1.' },
     { id: 'r19', type: 'tf', q: 'RIPv1 überträgt keine Subnetzmasken und unterstützt deshalb kein VLSM.', answer: true, explain: 'Erst RIPv2 überträgt Subnetzinformationen, nutzt Multicast und kann sich authentifizieren.' },
     { id: 'r20', type: 'mc', q: 'Welche Routen legt ein Cisco-Router für jedes eingerichtete Interface automatisch an?', options: ['Eine C-Route und eine L-Route', 'Nur eine S-Route', 'Eine Default-Route', 'Gar keine'], answer: 0, explain: 'C für das angeschlossene Netz und L für die eigene Adresse des Interfaces als /32.' },
+    { id: 'r21', type: 'mc', q: 'Welche Art von Routing-Protokoll <b>konvergiert</b> in der Regel schneller, passt sich also schneller an Änderungen im Netz an?', options: ['Link State', 'Distance Vector', 'Statisches Routing', 'Beide gleich schnell'], answer: 0, explain: 'Bei Link State kennt jeder Router das ganze Netz und kann sofort selbst neu rechnen. Bei Distance Vector muss sich eine Änderung erst von Nachbar zu Nachbar herumsprechen.' },
+    { id: 'r22', type: 'mc', q: 'Was ist der wichtigste Unterschied zwischen <b>Switching</b> und <b>Routing</b>?', options: ['Switching leitet innerhalb eines Netzes weiter (MAC), Routing zwischen Netzen (IP)', 'Switching nutzt IP-Adressen, Routing MAC-Adressen', 'Routing gibt es nur im WLAN', 'Es gibt keinen Unterschied'], answer: 0, explain: 'Der Switch arbeitet auf Schicht 2 mit MAC-Adressen im eigenen Netz. Der Router arbeitet auf Schicht 3 mit IP-Adressen zwischen verschiedenen Netzen.' },
   ],
   pairs: [
     { title: 'Code und Herkunft', items: [['C', 'direkt verbunden'], ['L', 'eigene IP des Interfaces'], ['S', 'statisch'], ['R', 'RIP'], ['O', 'OSPF'], ['D', 'EIGRP']] },
@@ -103,6 +107,8 @@ export const routing = {
     ['Was zeichnet EIGRP aus?', 'Von Cisco, Distance Vector, Metrik aus Bandbreite, Verzögerung, Last und Zuverlässigkeit.'],
     ['Distance Vector oder Link State?', 'Distance Vector: Tabelle an die Nachbarn. Link State: Infos über die eigenen Verbindungen an alle.'],
     ['Wie lautet eine Default-Route bei Cisco?', 'ip route 0.0.0.0 0.0.0.0 und dahinter der nächste Router oder das Interface.'],
+    ['Was bedeutet Konvergenz beim Routing?', 'Nach einer Änderung haben alle Router wieder dasselbe, richtige Bild vom Netz. Link State konvergiert schneller als Distance Vector.'],
+    ['Switching oder Routing?', 'Switching: innerhalb eines Netzes, MAC-Adressen, Schicht 2. Routing: zwischen Netzen, IP-Adressen, Schicht 3.'],
   ],
 };
 
@@ -186,6 +192,7 @@ export const vpn = {
     {
       h: 'Was ein VPN ist',
       html: `<p>Ein VPN (Virtual Private Network) baut einen verschlüsselten Tunnel durch ein öffentliches Netz, meistens das Internet. Für die Teilnehmer fühlt es sich so an, als säßen sie direkt im entfernten Netz, obwohl sie vielleicht tausende Kilometer entfernt sind.</p>
+      <p>Ein VPN soll drei Dinge sicherstellen: <b>Vertraulichkeit</b> (niemand kann mitlesen), <b>Integrität</b> (niemand hat die Daten unterwegs verändert) und <b>Authentizität</b> (die Daten kommen wirklich vom angegebenen Absender).</p>
       <p>Die Idee dahinter: Statt eine teure eigene Leitung zu mieten, nutzt man den günstigen Internetzugang vor Ort und sichert die Verbindung durch Verschlüsselung ab.</p>
       <p>Typische Einsätze sind der Zugriff aufs Firmennetz aus dem Homeoffice oder von unterwegs und die Verbindung mehrerer Standorte. Der Teilnehmer meldet sich bei einem VPN-Server an. Nach dem Aufbau des Tunnels bekommt er eine neue, interne IP-Adresse.</p>`,
     },
@@ -195,6 +202,10 @@ export const vpn = {
       <tr><td>End-to-Site</td><td>ein einzelnes Gerät mit einem Netz</td><td>Homeoffice ins Firmennetz</td></tr>
       <tr><td>Site-to-Site</td><td>zwei Netze miteinander</td><td>Filiale mit der Zentrale</td></tr>
       <tr><td>End-to-End</td><td>zwei einzelne Geräte direkt</td><td>Client direkt mit einem Server</td></tr></table>
+      <p>In Prüfungen und Lernkarten tauchen für dieselben Arten oft andere Namen auf. Sie sind alle richtig:</p>
+      <ul><li><b>End-to-Site</b> heißt auch Remote-Access-VPN, Host-to-LAN-VPN oder Host-to-Gateway-VPN.</li>
+      <li><b>Site-to-Site</b> heißt auch LAN-to-LAN-VPN oder Gateway-to-Gateway-VPN.</li>
+      <li><b>End-to-End</b> heißt auch Host-to-Host-VPN.</li></ul>
       <p>Bei Site-to-Site übernehmen zwei VPN-Gateways die Verschlüsselung. Die PCs in den Netzen brauchen dann keine eigene VPN-Software.</p>`,
     },
     {
@@ -249,9 +260,13 @@ export const vpn = {
     { id: 'p14', type: 'tf', q: 'L2TP verschlüsselt selbst nicht und wird deshalb meistens zusammen mit IPsec eingesetzt.', answer: true, explain: 'Bei L2TP over IPsec baut L2TP den Tunnel, und IPsec übernimmt die Verschlüsselung.' },
     { id: 'p15', type: 'mc', q: 'Was ist laut Unterlagen das größere Sicherheitsrisiko bei VPN?', options: ['Gestohlene Notebooks oder VPN-Router', 'Angriffe mit gefälschten Zertifikaten', 'Zu kurze AES-Schlüssel', 'Zu viele gleichzeitige Tunnel'], answer: 0, explain: 'Gefälschte Zertifikate erkennen Client und Gateway, dann wird kein Tunnel aufgebaut. Gefährlicher ist es, wenn jemand ein Gerät mit gültigem Zugang in die Hände bekommt.' },
     { id: 'p16', type: 'multi', q: 'Was stellt <b>IPsec mit ESP</b> sicher?', options: ['Dass das Paket wirklich vom angegebenen Absender kommt', 'Dass das Paket unterwegs nicht verändert wurde', 'Dass niemand den Inhalt mitlesen kann', 'Eine höhere Bandbreite'], answer: [0, 1, 2], explain: 'ESP sorgt für Authentisierung, Integrität und Vertraulichkeit. Schneller wird die Verbindung dadurch nicht.' },
+    { id: 'p17', type: 'mc', q: 'Wie nennt man ein <b>End-to-Site-VPN</b> auch?', options: ['Remote-Access-VPN', 'LAN-to-LAN-VPN', 'Gateway-to-Gateway-VPN', 'Host-to-Host-VPN'], answer: 0, explain: 'End-to-Site heißt auch Remote-Access-VPN oder Host-to-LAN-VPN. LAN-to-LAN und Gateway-to-Gateway sind andere Namen für Site-to-Site, Host-to-Host für End-to-End.' },
+    { id: 'p18', type: 'mc', q: 'Wie nennt man ein <b>Site-to-Site-VPN</b> auch?', options: ['LAN-to-LAN-VPN', 'Remote-Access-VPN', 'Host-to-Host-VPN', 'Host-to-LAN-VPN'], answer: 0, explain: 'Site-to-Site verbindet zwei Netze, deshalb auch LAN-to-LAN oder Gateway-to-Gateway.' },
+    { id: 'p19', type: 'multi', q: 'Welche drei Ziele soll ein VPN sicherstellen?', options: ['Vertraulichkeit', 'Integrität', 'Authentizität', 'Höhere Geschwindigkeit'], answer: [0, 1, 2], explain: 'Niemand soll mitlesen, niemand soll unbemerkt etwas verändern, und der Absender soll echt sein. Schneller wird die Verbindung durch ein VPN nicht.' },
   ],
   pairs: [
     { title: 'VPN-Art und Beispiel', items: [['End-to-Site', 'Homeoffice ins Firmennetz'], ['Site-to-Site', 'Filiale mit Zentrale'], ['End-to-End', 'Client direkt mit Server']] },
+    { title: 'VPN-Art und anderer Name', items: [['End-to-Site', 'Remote-Access-VPN'], ['Site-to-Site', 'LAN-to-LAN-VPN'], ['End-to-End', 'Host-to-Host-VPN']] },
     { title: 'Begriffe', items: [['IKE', 'Schlüsselaustausch über UDP 500'], ['ESP', 'IP-Protokoll 50'], ['AH', 'IP-Protokoll 51'], ['Transportmodus', 'nur Nutzdaten verschlüsselt'], ['Tunnelmodus', 'ganzes Paket eingepackt'], ['AES-256', '2<sup>256</sup> mögliche Schlüssel']] },
     { title: 'AAA', items: [['Authentication', 'Identität prüfen'], ['Authorization', 'Darf der Nutzer den Dienst nutzen?'], ['Accounting', 'Nutzung festhalten']] },
   ],
@@ -262,5 +277,7 @@ export const vpn = {
     ['Transportmodus oder Tunnelmodus?', 'Transport: nur Nutzdaten verschlüsselt, Header bleibt. Tunnel: ganzes Paket in ein neues IP-Paket eingepackt.'],
     ['Wofür steht AAA?', 'Authentication, Authorization, Accounting.'],
     ['Was ist der Vorteil von SSL-VPN?', 'Es läuft über normales TCP oder UDP und kommt dadurch auch durch eingeschränkte Netze.'],
+    ['Welche anderen Namen gibt es für die VPN-Arten?', 'End-to-Site: Remote-Access. Site-to-Site: LAN-to-LAN oder Gateway-to-Gateway. End-to-End: Host-to-Host.'],
+    ['Welche drei Ziele hat ein VPN?', 'Vertraulichkeit, Integrität und Authentizität.'],
   ],
 };

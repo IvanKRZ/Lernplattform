@@ -26,6 +26,7 @@ export const kabel = {
       <tr><td>FTP</td><td>Foiled: jedes Paar mit Alufolie geschirmt</td></tr>
       <tr><td>STP</td><td>Shielded: jedes Paar mit Kupfergeflecht geschirmt</td></tr>
       <tr><td>S/UTP</td><td>Gesamtschirm, die Paare selbst sind ungeschirmt</td></tr>
+      <tr><td>S/FTP</td><td>Gesamtschirm und jedes Paar mit Folie geschirmt</td></tr>
       <tr><td>S/STP</td><td>Gesamtschirm und jedes Paar geschirmt</td></tr></table>
       <p>Die <b>Kategorie</b> sagt, wie schnell ein Kabel sein kann. Laut Unterlagen schafft Cat5 100 Mbit/s, Cat5e bis 1 Gbit/s, Cat6 1 Gbit/s, Cat6a und Cat7 10 Gbit/s und Cat8 bis 40 Gbit/s auf 30 m.</p>`,
     },
@@ -44,7 +45,12 @@ export const kabel = {
       <tr><td>Typische Farbe</td><td>gelb</td><td>orange, OM3/OM4 oft türkis</td></tr>
       <tr><td>Einsatz</td><td>Weitverkehr, zwischen Standorten</td><td>im Gebäude und auf dem Gelände</td></tr></table>
       <p>Bei Multimode gibt es Klassen: OM1 und OM2 für bis zu 1 Gbit/s, OM3 und OM4 für 10 Gbit/s und mehr. Übliche Stecker sind <b>LC</b> (Lucent Connector, oft im Rechenzentrum), <b>SC</b> (Subscriber Connector) und <b>ST</b> (Straight Tip).</p>
-      <p>Glasfaser hat drei große Vorteile: Die Dämpfung ist gering, elektromagnetische Störungen spielen keine Rolle, und es gibt keine Probleme mit Strom oder Blitzschlag.</p>`,
+      <p>Der Unterschied liegt im <b>Kern</b>, also im inneren Glasfaden, durch den das Licht läuft. Bei Singlemode ist er nur etwa <b>9 µm</b> dick, bei Multimode <b>50 µm oder 62,5 µm</b>. Das umgebende Mantelglas ist bei beiden 125 µm dick. Im dünnen Singlemode-Kern läuft das Licht praktisch auf einem einzigen Weg. Im dickeren Multimode-Kern nimmt es mehrere Wege, kommt dadurch zeitlich etwas verschmiert an und wird stärker gedämpft.</p>
+      <table><tr><th></th><th>Vorteile</th><th>Nachteile</th></tr>
+      <tr><td>Singlemode</td><td>geringe Dämpfung, kaum Laufzeitunterschiede, große Entfernungen, hohe Bandbreite</td><td>teurer Laser nötig, aufwendige Herstellung, Stecker und Spleiße müssen sehr genau sitzen</td></tr>
+      <tr><td>Multimode</td><td>einfacher herzustellen, einfachere Verbindungstechnik wegen des dickeren Kerns</td><td>höhere Dämpfung, geringere Bandbreite, nur kürzere Strecken</td></tr></table>
+      <p>Glasfaser allgemein hat große Vorteile: hohe Übertragungsraten, große Reichweite, keine Störung durch elektromagnetische Felder, keine Probleme mit Strom oder Blitzschlag und hohe Abhörsicherheit. Dafür ist sie teurer als Kupfer, die Installation braucht Fachwissen und Spezialwerkzeug, die Stecker sind empfindlich gegen Schmutz, und wird das Kabel zu stark geknickt, kann die Faser brechen. Strom für Geräte (Power over Ethernet) lässt sich über Glasfaser nicht übertragen.</p>
+      <div class="merke"><b>Hinweis zu Reichweiten:</b> Manche Lernkarten nennen für Multimode bis zu 2 km und für Singlemode bis zu 10 km. Die tatsächliche Reichweite hängt stark von der Übertragungsrate ab. Für eure Klausur gelten die Werte aus dem Unterricht: Multimode bis ca. 550 m, Singlemode viele Kilometer.</div>`,
     },
     {
       h: 'Dämpfung und Störungen',
@@ -89,6 +95,10 @@ export const kabel = {
     { id: 'k20', type: 'mc', q: 'Welches Netz deckt eine Stadt ab?', options: ['MAN', 'LAN', 'SAN', 'GAN'], answer: 0, explain: 'MAN steht für Metropolitan Area Network, also ein Netz in Stadtgröße.' },
     { id: 'k21', type: 'mc', q: 'Welche Kabelkategorie nennen die Unterlagen für 10 Gbit/s?', options: ['Cat6a und Cat7', 'Cat5', 'Cat5e', 'Cat3'], answer: 0, explain: 'Cat6a und Cat7 sind für 10-Gigabit-Ethernet geeignet. Cat5e schafft bis 1 Gbit/s.' },
     { id: 'k22', type: 'mc', q: 'Wofür steht <b>RJ</b> in RJ45?', options: ['Registered Jack', 'Rapid Junction', 'Rear Jack', 'Router Join'], answer: 0, explain: 'Registered Jack bedeutet genormte Buchse. Technisch korrekt heißt der Stecker 8P8C (8 Positionen, 8 Kontakte).' },
+    { id: 'k23', type: 'mc', q: 'Wie dick ist der Kern einer <b>Singlemode</b>-Faser ungefähr?', options: ['9 µm', '50 µm', '62,5 µm', '125 µm'], answer: 0, explain: 'Singlemode hat einen Kern von etwa 9 µm. Multimode hat 50 oder 62,5 µm. 125 µm ist der Durchmesser des Mantelglases bei beiden.' },
+    { id: 'k24', type: 'multi', q: 'Welche Aussagen sind <b>Nachteile</b> von Glasfaser?', options: ['Die Stecker sind empfindlich gegen Schmutz', 'Bei starkem Knicken kann die Faser brechen', 'Power over Ethernet ist nicht möglich', 'Elektromagnetische Felder stören die Übertragung'], answer: [0, 1, 2], explain: 'Gegen elektromagnetische Störungen ist Glasfaser gerade unempfindlich, das ist einer ihrer großen Vorteile.' },
+    { id: 'k25', type: 'mc', q: 'Was bedeutet <b>S/FTP</b> bei Twisted-Pair-Kabeln?', options: ['Gesamtschirm um alle Paare, dazu jedes Paar mit Folie geschirmt', 'Keine Schirmung', 'Nur ein Gesamtschirm', 'Jedes Paar mit Kupfergeflecht, kein Gesamtschirm'], answer: 0, explain: 'S vor dem Schrägstrich steht für den Gesamtschirm, FTP für die Folie um jedes einzelne Paar.' },
+    { id: 'k26', type: 'mc', q: 'Warum ist die Verbindungstechnik bei <b>Multimode</b> einfacher als bei Singlemode?', options: ['Der Kern ist dicker, deshalb muss beim Verbinden nicht so genau gearbeitet werden', 'Multimode braucht keine Stecker', 'Multimode wird mit Kupfer verbunden', 'Multimode hat keinen Mantel'], answer: 0, explain: 'Bei einem Kern von 50 µm statt 9 µm ist mehr Spielraum, wenn zwei Fasern aufeinandertreffen.' },
   ],
   pairs: [
     { title: 'Schirmung', items: [['UTP', 'keine Schirmung'], ['FTP', 'Paare mit Alufolie'], ['STP', 'Paare mit Kupfergeflecht'], ['S/UTP', 'nur Gesamtschirm'], ['S/STP', 'Gesamtschirm und Paare']] },
@@ -104,6 +114,8 @@ export const kabel = {
     ['Was bedeutet galvanische Trennung?', 'Glasfaser leitet keinen Strom. Deshalb gibt es keine Ausgleichsströme und keine Gefahr durch Blitzschlag.'],
     ['Was ist der Unterschied zwischen Halb- und Vollduplex?', 'Halbduplex: senden oder empfangen. Vollduplex: beides gleichzeitig.'],
     ['Wo nutzt man CSMA/CD und wo CSMA/CA?', 'CSMA/CD bei Ethernet im Halbduplex, CSMA/CA bei WLAN.'],
+    ['Wie dick ist der Kern bei Singlemode und Multimode?', 'Singlemode etwa 9 µm, Multimode 50 oder 62,5 µm. Das Mantelglas hat bei beiden 125 µm.'],
+    ['Nenne Nachteile von Glasfaser.', 'Teurer, Installation braucht Fachwissen, Stecker empfindlich gegen Schmutz, Bruchgefahr beim Knicken, kein PoE.'],
   ],
 };
 
@@ -124,14 +136,14 @@ export const topologien = {
       html: `<p>Im WAN geht es darum, wie Standorte verbunden sind.</p>
       <ul><li><b>Punkt-zu-Punkt</b> ist die einfachste Form: eine direkte, dauerhafte Verbindung zwischen zwei Endpunkten.</li>
       <li><b>Hub-and-Spoke</b> ist ein Stern im WAN. Jeder Standort ist nur mit der Zentrale verbunden, und der gesamte Datenverkehr läuft über die Zentrale.</li>
-      <li>Bei einer <b>Vollvermaschung (Mesh)</b> ist jeder Standort mit jedem verbunden. Das ist sehr ausfallsicher, aber teuer und aufwendig zu verwalten.</li>
+      <li>Bei einer <b>Vollvermaschung (Mesh)</b> ist jeder Standort mit jedem verbunden. Weil es zwischen zwei Punkten immer mehrere Wege gibt, ist das sehr ausfallsicher und leistungsfähig. Mit jedem neuen Standort steigt die Zahl der Verbindungen aber stark an. Das macht die Vollvermaschung teuer und aufwendig zu verwalten.</li>
       <li>Eine <b>Hybrid-Topologie</b> kombiniert verschiedene Formen, zum Beispiel eine Teilvermaschung, bei der nur einige Standorte direkt verbunden sind.</li></ul>
       <div class="rechnung"><p>Wie viele Verbindungen braucht eine Vollvermaschung?</p><p>Jeder der n Standorte braucht eine Verbindung zu allen anderen, also n − 1. Weil jede Verbindung dabei doppelt gezählt wird, teilt man durch 2.</p><p>Formel: <b>n · (n − 1) : 2</b>. Bei 6 Standorten: 6 · 5 : 2 = 15 Verbindungen.</p></div>`,
     },
     {
       h: 'Topologien im LAN',
       html: `<p><b>Stern:</b> Alle Geräte hängen an einem zentralen Punkt, heute fast immer ein Switch. Das ist einfach zu installieren, gut erweiterbar, und Fehler lassen sich schnell finden. Der Nachteil: Fällt der Switch aus, ist das ganze Netz betroffen.</p>
-      <p><b>Erweiterter Stern:</b> Mehrere Sterne werden miteinander verbunden. Das ist eine Hybrid-Topologie und heute der Standard in Gebäuden.</p>
+      <p><b>Erweiterter Stern:</b> Mehrere Sterne werden miteinander verbunden. Das ist eine Hybrid-Topologie und heute der Standard in Gebäuden. Oft heißt sie auch <b>Baumtopologie</b>: Von einem zentralen Knoten, dem „Stamm“, gehen Verzweigungen zu weiteren Sternen aus. Sie lässt sich gut erweitern, weil man neue Äste anhängen kann, ohne das ganze Netz umzubauen.</p>
       <p><b>Ring:</b> Jedes Gerät ist mit seinen beiden Nachbarn verbunden. Ein Abschlusswiderstand ist nicht nötig. Früher nutzten Token Ring und FDDI diese Form, heute ist sie veraltet.</p>
       <p><b>Bus:</b> Alle Geräte hängen an einer gemeinsamen Leitung, aktive Verteiler braucht man nicht. An beiden Enden muss ein Abschlusswiderstand sitzen. Früher lief Ethernet so über Koaxialkabel (10Base2 und 10Base5). Im Büro gibt es das nicht mehr, in Autos und Industrieanlagen ist der Bus aber weiterhin verbreitet.</p>`,
     },
@@ -149,6 +161,7 @@ export const topologien = {
     { id: 't10', type: 'mc', q: 'Was ist die einfachste WAN-Topologie?', options: ['Punkt-zu-Punkt', 'Vollvermaschung', 'Hub-and-Spoke', 'Hybrid'], answer: 0, explain: 'Punkt-zu-Punkt ist eine direkte, dauerhafte Verbindung zwischen zwei Endpunkten.' },
     { id: 't11', type: 'tf', q: 'Ein erweiterter Stern ist eine Hybrid-Topologie.', answer: true, explain: 'Mehrere Sterne werden miteinander verbunden. Es werden also Topologien kombiniert.' },
     { id: 't12', type: 'tf', q: 'Physische und logische Topologie eines Netzes sind immer gleich.', answer: false, explain: 'Ein Hub ist zum Beispiel physisch ein Stern, logisch aber ein Bus, weil sich alle Geräte das Medium teilen.' },
+    { id: 't13', type: 'mc', q: 'Wie nennt man den <b>erweiterten Stern</b> auch?', options: ['Baumtopologie', 'Ringtopologie', 'Bustopologie', 'Punkt-zu-Punkt'], answer: 0, explain: 'Bei der Baumtopologie gehen von einem zentralen Knoten Verzweigungen zu weiteren Sternen aus, wie Äste von einem Stamm.' },
   ],
   pairs: [
     { title: 'Topologie und Merkmal', items: [['Stern', 'zentraler Switch'], ['Bus', 'Abschlusswiderstände'], ['Ring', 'Token Ring, FDDI'], ['Vollvermaschung', 'jeder mit jedem'], ['Hub-and-Spoke', 'alles über die Zentrale'], ['Hybrid', 'Kombination mehrerer Formen']] },
@@ -160,6 +173,7 @@ export const topologien = {
     ['Vor- und Nachteile der Stern-Topologie?', 'Einfach, erweiterbar, schnelle Fehlersuche. Aber: Fällt der Switch aus, fällt alles aus.'],
     ['Was kennzeichnet die Bus-Topologie?', 'Eine gemeinsame Leitung mit Abschlusswiderständen. Früher Ethernet über Koax, heute in Autos und Industrie.'],
     ['Was kennzeichnet die Ring-Topologie?', 'Jedes Gerät ist mit seinen Nachbarn verbunden, kein Abschlusswiderstand. Früher Token Ring und FDDI.'],
+    ['Was ist eine Baumtopologie?', 'Ein anderer Name für den erweiterten Stern: mehrere Sterne, die von einem zentralen Knoten aus verbunden sind.'],
   ],
 };
 
@@ -176,7 +190,14 @@ export const switching = {
     {
       h: 'Die MAC-Adresse',
       html: `<p>Jeder Netzwerkadapter hat eine eigene Hardware-Adresse, die <b>MAC-Adresse</b> (Media Access Control). Sie ist 48 Bit lang, also 6 Byte, und wird hexadezimal geschrieben, zum Beispiel <span class="mono">08:00:20:ae:fd:7e</span>. Damit gibt es etwa 281 Billionen mögliche Adressen.</p>
+      <p>Die MAC-Adresse besteht aus zwei Hälften zu je 24 Bit. Die erste Hälfte heißt <b>OUI</b> (Organizationally Unique Identifier) und zeigt, welcher Hersteller den Adapter gebaut hat. Die zweite Hälfte vergibt der Hersteller selbst als fortlaufende Nummer für das einzelne Gerät.</p>
       <p>Unter Windows zeigt der Befehl <span class="mono">ipconfig /all</span> die MAC-Adresse als „Physische Adresse“ an. Unter Linux geht das mit <span class="mono">ip link</span>.</p>`,
+    },
+    {
+      h: 'Von der IP- zur MAC-Adresse: ARP',
+      html: `<p>Ein PC kennt meistens nur die IP-Adresse seines Ziels. Um einen Frame zu bauen, braucht er aber die MAC-Adresse. Diese findet er mit dem <b>Address Resolution Protocol (ARP)</b> heraus.</p>
+      <p>Der PC schickt dazu eine ARP-Anfrage als Broadcast an alle Geräte im Netz, sinngemäß: „Wer hat die IP-Adresse 192.168.1.20? Bitte sag mir deine MAC-Adresse.“ Nur das Gerät mit dieser IP antwortet, und zwar direkt an den Fragenden. Die Antwort merkt sich der PC eine Weile in seinem ARP-Cache. Unter Windows zeigt <span class="mono">arp -a</span> diesen Cache an.</p>
+      <p>ARP funktioniert nur im eigenen Netz, weil Router Broadcasts nicht weiterleiten. Liegt das Ziel in einem anderen Netz, fragt der PC per ARP nach der MAC-Adresse seines Default-Gateways.</p>`,
     },
     {
       h: 'Lernen und Weiterleiten',
@@ -206,6 +227,9 @@ export const switching = {
     { id: 'w9', type: 'mc', q: 'Welche Art von Switch kann zwischen VLANs <b>routen</b>?', options: ['Ein Layer-3-Switch', 'Ein einfacher Layer-2-Switch', 'Ein Hub', 'Ein Repeater'], answer: 0, explain: 'Ein Layer-3-Switch kann zusätzlich anhand von IP-Adressen vermitteln, also routen.' },
     { id: 'w10', type: 'mc', q: 'Welche Eigenschaft des GS308 macht Crossover-Kabel überflüssig?', options: ['Auto-MDI/MDIX', 'Plug-and-Play', 'Layer 2', 'Betrieb ohne Lüfter'], answer: 0, explain: 'Auto-MDI/MDIX erkennt selbst, ob die Adern gekreuzt werden müssen.' },
     { id: 'w11', type: 'tf', q: 'An einem Switch-Port mit Vollduplex können keine Kollisionen entstehen.', answer: true, explain: 'Senden und Empfangen laufen getrennt, und an jedem Port hängt nur ein Gerät.' },
+    { id: 'w12', type: 'mc', q: 'Was gibt der <b>OUI</b>-Teil einer MAC-Adresse an?', options: ['Den Hersteller des Netzwerkadapters', 'Das VLAN des Geräts', 'Die IP-Adresse des Geräts', 'Den Switch-Port'], answer: 0, explain: 'Die ersten 24 Bit einer MAC-Adresse sind der OUI. Er ist jedem Hersteller fest zugeteilt. Die zweiten 24 Bit nummerieren die einzelnen Geräte.' },
+    { id: 'w13', type: 'mc', q: 'Mit welchem Protokoll findet ein PC zu einer IP-Adresse die passende <b>MAC-Adresse</b>?', options: ['ARP', 'DNS', 'DHCP', 'ICMP'], answer: 0, explain: 'ARP schickt einen Broadcast „Wer hat diese IP?“, und das passende Gerät antwortet mit seiner MAC-Adresse. DNS löst dagegen Namen in IP-Adressen auf.' },
+    { id: 'w14', type: 'tf', q: 'Ein Switch entscheidet anhand der <b>Ziel-MAC-Adresse</b> eines Frames, an welchen Port er ihn schickt.', answer: true, explain: 'Er liest die Ziel-MAC und schaut in seiner Tabelle nach, hinter welchem Port sie sitzt. Gelernt hat er diese Tabelle vorher aus den Quell-MAC-Adressen.' },
   ],
   pairs: [
     { title: 'Hub oder Switch?', items: [['schickt alles an alle Ports', 'Hub'], ['lernt MAC-Adressen', 'Switch'], ['arbeitet auf Schicht 1', 'Hub'], ['arbeitet auf Schicht 2', 'Switch'], ['verbindet zwei Ports direkt', 'Switch'], ['das langsamste Gerät bremst alle', 'Hub']] },
@@ -216,6 +240,8 @@ export const switching = {
     ['Was ist eine MAC-Adresse?', 'Die 48 Bit lange Hardware-Adresse eines Netzwerkadapters, hexadezimal geschrieben.'],
     ['Hub oder Switch: wer schickt an alle?', 'Der Hub (Schicht 1). Der Switch (Schicht 2) schickt gezielt an den Zielport.'],
     ['Managed oder unmanaged?', 'Unmanaged: einstecken und fertig. Managed: konfigurierbar, zum Beispiel für VLANs.'],
+    ['Was ist der OUI?', 'Die ersten 24 Bit der MAC-Adresse. Sie zeigen den Hersteller des Adapters.'],
+    ['Wofür ist ARP da?', 'ARP findet zu einer IP-Adresse im eigenen Netz die passende MAC-Adresse, per Broadcast-Anfrage.'],
   ],
 };
 
@@ -234,6 +260,7 @@ export const vlan = {
       h: 'Portbasierte VLANs',
       html: `<p>Bei einem portbasierten VLAN wird jeder Port des Switches genau einem VLAN zugeordnet. Man spricht auch von einem <b>Access-Port</b>. Nur Geräte im selben VLAN können direkt miteinander kommunizieren.</p>
       <div class="rechnung"><p>Beispiel aus dem Unterricht: Switch A</p><p>Port 1 bis 4 gehören zu VLAN 1, Port 5 bis 8 zu VLAN 2.<br>PC A-1 an Port 1 und PC A-2 an Port 2 können sich erreichen. PC A-5 an Port 5 und PC A-6 an Port 6 auch. Zwischen den beiden Gruppen geht nichts.</p></div>
+      <p>Werden die Ports von Hand fest einem VLAN zugeordnet, spricht man von <b>statischen VLANs</b>. Das portbasierte VLAN aus dem Unterricht ist so ein statisches VLAN. Bei <b>dynamischen VLANs</b> ordnet der Switch ein Gerät automatisch einem VLAN zu, zum Beispiel anhand seiner MAC-Adresse. Steckt man den Laptop dann an einen anderen Port, landet er trotzdem im richtigen VLAN.</p>
       <p>Will man zwei Switche portbasiert verbinden, braucht man <b>für jedes VLAN ein eigenes Kabel</b>. Bei zwei VLANs sind das also zwei Kabel, zum Beispiel von Port 4 zu Port 4 für VLAN 1 und von Port 8 zu Port 8 für VLAN 2.</p>`,
     },
     {
@@ -262,6 +289,8 @@ export const vlan = {
     { id: 'v10', type: 'multi', q: 'Welche Vorteile bieten VLANs?', options: ['Kleinere Broadcast-Domänen', 'Abteilungen trennen, ohne neue Hardware zu kaufen', 'Mehr Sicherheit durch Trennung', 'Verschlüsselung des Datenverkehrs'], answer: [0, 1, 2], explain: 'VLANs trennen Netze logisch voneinander. Verschlüsselt wird dabei aber nichts.' },
     { id: 'v11', type: 'mc', q: 'Was ist ein <b>portbasiertes</b> VLAN?', options: ['Jeder Port gehört fest zu einem VLAN', 'Mehrere VLANs laufen über einen Port', 'Das VLAN richtet sich nach der MAC-Adresse', 'Das VLAN richtet sich nach dem Benutzernamen'], answer: 0, explain: 'Portbasiert heißt: ein VLAN pro Port. Bei Tagged VLANs können mehrere VLANs über einen Port laufen.' },
     { id: 'v12', type: 'mc', q: 'Wie viele getrennte Netze ermöglicht <b>VXLAN</b> ungefähr?', options: ['Etwa 16,7 Millionen', '4.096', '65.536', '1.024'], answer: 0, explain: 'VXLAN nutzt eine 24 Bit lange ID. 2<sup>24</sup> sind etwa 16,7 Millionen.' },
+    { id: 'v13', type: 'mc', q: 'Was ist ein <b>dynamisches</b> VLAN?', options: ['Der Switch ordnet ein Gerät automatisch einem VLAN zu, zum Beispiel anhand der MAC-Adresse', 'Jeder Port wird von Hand fest einem VLAN zugeordnet', 'Ein VLAN, das nur nachts aktiv ist', 'Ein VLAN ohne VLAN-ID'], answer: 0, explain: 'Bei dynamischen VLANs hängt die Zugehörigkeit am Gerät, nicht am Port. Die feste Zuordnung von Hand heißt statisches VLAN.' },
+    { id: 'v14', type: 'tf', q: 'Ein portbasiertes VLAN ist ein statisches VLAN.', answer: true, explain: 'Die Ports werden von Hand fest einem VLAN zugeordnet, und diese Zuordnung bleibt, bis jemand sie ändert.' },
   ],
   pairs: [
     { title: 'Begriffe', items: [['802.1Q', 'Standard für VLAN-Tags'], ['Trunk', 'mehrere VLANs über ein Kabel'], ['Access-Port', 'genau ein VLAN, ohne Tag'], ['VLAN-ID', '12 Bit'], ['Layer-3-Switch', 'routet zwischen VLANs'], ['VXLAN', 'etwa 16,7 Millionen Netze']] },
@@ -272,5 +301,6 @@ export const vlan = {
     ['Wie lang ist die VLAN-ID?', '12 Bit, also 4.096 mögliche Werte.'],
     ['Wo sitzt der VLAN-Tag?', 'Im Ethernet-Frame direkt nach den MAC-Adressen.'],
     ['Wie kommunizieren zwei VLANs miteinander?', 'Über einen Router (mit Subinterfaces) oder einen Layer-3-Switch.'],
+    ['Statisches oder dynamisches VLAN?', 'Statisch: Ports von Hand fest zugeordnet. Dynamisch: Zuordnung automatisch, zum Beispiel nach MAC-Adresse.'],
   ],
 };

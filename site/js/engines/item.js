@@ -58,7 +58,7 @@ export function renderItem(item, { exam = false, onAnswer, onNext, label } = {})
     root.classList.add(ok ? 'is-ok' : 'is-bad');
     add(fb, 
       h('div', { class: 'fb-title' }, ok ? pickOk() : 'Leider falsch.'),
-      !ok ? h('div', { class: 'fb-correct' }, 'Richtig ist: ', h('b', { html: correctText(item, opts) })) : null,
+      !ok ? h('div', { class: 'fb-correct' }, item.type === 'multi' ? multiSummary(item, root._picked) : null, 'Richtig ist: ', h('b', { html: correctText(item, opts) })) : null,
       item.explain ? h('div', { class: 'fb-explain', html: item.explain }) : null,
       h('div', { class: 'fb-actions' },
         h('button', { class: 'btn btn-primary', onclick: () => onNext && onNext(), autofocus: true }, 'Weiter'),
@@ -101,13 +101,17 @@ export function renderItem(item, { exam = false, onAnswer, onNext, label } = {})
     });
     const submit = h('button', { class: 'btn btn-primary', onclick: () => {
       const ok = sel.size === item.answer.length && item.answer.every(i => sel.has(i));
+      root._picked = [...sel];
       finish(ok, opts.filter(o => sel.has(o.i)).map(o => o.t).join(' · ') || '–', () => list.querySelectorAll('.opt').forEach(x => {
         const i = Number(x.dataset.i);
-        if (item.answer.includes(i)) x.classList.add('right'); else if (sel.has(i)) x.classList.add('wrong');
+        const should = item.answer.includes(i), picked = sel.has(i);
+        if (should && picked) x.classList.add('right');
+        else if (should) { x.classList.add('missed'); add(x, h('span', { class: 'opt-note' }, 'hättest du auch wählen müssen')); }
+        else if (picked) { x.classList.add('wrong'); add(x, h('span', { class: 'opt-note' }, 'falsch gewählt')); }
       }));
       submit.remove();
     } }, 'Prüfen');
-    add(body, list, h('div', { class: 'row' }, submit, h('span', { class: 'muted small' }, 'Wähle alle richtigen Antworten aus und klicke dann auf Prüfen.')));
+    add(body, list, h('div', { class: 'row' }, submit, h('span', { class: 'muted small multi-hint' }, 'Wähle alle richtigen Antworten aus und klicke dann auf Prüfen.')));
     key(e => {
       if (answered) return;
       const n = Number(e.key);
@@ -151,6 +155,16 @@ export function renderItem(item, { exam = false, onAnswer, onNext, label } = {})
   });
 
   return root;
+}
+
+// Kurzer Satz, was bei der Mehrfachauswahl gefehlt hat oder zu viel war
+function multiSummary(item, picked) {
+  const set = new Set(picked || []);
+  const hit = item.answer.filter(i => set.has(i)).length;
+  const extra = [...set].filter(i => !item.answer.includes(i)).length;
+  const parts = [`Du hast ${hit} von ${item.answer.length} richtigen Antworten gewählt`];
+  if (extra) parts.push(`und ${extra} falsche dazu`);
+  return h('span', { class: 'multi-sum' }, parts.join(' ') + '. ');
 }
 
 const OK = ['Richtig.', 'Genau.', 'Stimmt.', 'Sitzt.', 'Korrekt.'];

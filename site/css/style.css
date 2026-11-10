@@ -255,6 +255,13 @@ a.trow:focus-visible { outline-offset: -3px; }
 .opt.sel { border-color: var(--primary); background: var(--primary-tint); box-shadow: inset 0 0 0 1px var(--primary); }
 .opt.right, .answered .opt.right:hover { border-color: var(--ok); background: var(--ok-tint); box-shadow: inset 0 0 0 1px var(--ok); }
 .opt.wrong, .answered .opt.wrong:hover { border-color: var(--bad); background: var(--bad-tint); box-shadow: inset 0 0 0 1px var(--bad); }
+.opt.missed, .answered .opt.missed:hover { border: 2px dashed var(--ok); background: var(--sheet); }
+.opt.missed kbd { background: var(--ok-tint); color: var(--ok); }
+.opt-note { margin-left: auto; font-size: .875rem; font-weight: 700; padding-left: var(--s3); white-space: nowrap; }
+.opt.missed .opt-note { color: var(--ok); }
+.opt.wrong .opt-note { color: var(--bad); }
+.multi-sum { display: block; margin-bottom: 4px; }
+@media (max-width: 560px) { .opt-note { white-space: normal; } }
 .opt.right kbd { background: var(--ok); color: var(--sheet); }
 .opt.wrong kbd { background: var(--bad); color: var(--sheet); }
 .input { flex: 1; min-width: 200px; min-height: 48px; padding: 10px 14px; border-radius: var(--r1); border: 1px solid var(--ink-3); background: var(--sheet); color: var(--ink); font: 1.125rem var(--mono); }
@@ -424,3 +431,4 @@ table.place td.on { background: var(--primary-tint); color: var(--primary-ink); 
 [data-theme="dark"] .theme-toggle .moon { display: none; }
 [data-theme="dark"] .theme-toggle .sun { display: inline; }
 @media (max-width: 720px) { .tt-label { display: none; } }
+.answered .multi-hint { display: none; }

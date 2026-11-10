@@ -99,7 +99,9 @@ export const subnetting = {
       h: 'Warum man Netze aufteilt',
       html: `<p>Beim Subnetting teilt man einen großen IP-Adressbereich in mehrere kleinere Netze auf. Man nennt das auch Netzsegmentierung.</p>
       <p>Der wichtigste Grund sind <b>Broadcasts</b>. Ein Broadcast ist eine Nachricht an alle Geräte im selben Netz. Geräte nutzen das zum Beispiel, um per <b>ARP</b> die MAC-Adresse zu einer IP-Adresse zu finden oder um per <b>DHCP</b> eine IP-Adresse zu bekommen. Jedes Gerät im Netz muss jeden Broadcast verarbeiten. In einem großen Netz mit vielen Geräten bremst das die Geräte und das Netz aus.</p>
-      <p>Router leiten Broadcasts nicht weiter. Teilt man ein Netz auf, wird also jede <b>Broadcast-Domäne</b> kleiner. Außerdem lassen sich Netze so sinnvoll ordnen, zum Beispiel nach Stockwerk, nach Abteilung oder nach Gerätetyp wie Drucker.</p>`,
+      <p>Router leiten Broadcasts nicht weiter. Teilt man ein Netz auf, wird also jede <b>Broadcast-Domäne</b> kleiner.</p>
+      <p>Eine Broadcast-Domäne ist der Bereich, den ein Broadcast erreicht. Innerhalb davon sind die Geräte über Hubs, Switches oder Bridges verbunden, also über Geräte der Schichten 1 und 2. Auf Schicht 2 hat ein Broadcast die Ziel-MAC-Adresse FF:FF:FF:FF:FF:FF. Unterteilen lässt sich eine Broadcast-Domäne nur mit Mitteln ab Schicht 3: mit Routern, mit Subnetzen oder mit VLANs.</p>
+      <p> Außerdem lassen sich Netze so sinnvoll ordnen, zum Beispiel nach Stockwerk, nach Abteilung oder nach Gerätetyp wie Drucker.</p>`,
     },
     {
       h: 'Netzanteil und Hostanteil',
@@ -112,7 +114,7 @@ export const subnetting = {
     {
       h: 'Wie viele Hosts passen in ein Netz?',
       html: `<p>Die Anzahl der Hostbits ist 32 minus Präfix. Mit diesen Bits lassen sich 2<sup>Hostbits</sup> Adressen bilden. Zwei davon kann man aber keinem Gerät geben:</p>
-      <ul><li>Die <b>Netzadresse</b>: alle Hostbits sind 0. Sie bezeichnet das Netz selbst.</li><li>Die <b>Broadcastadresse</b>: alle Hostbits sind 1. Sie erreicht alle Geräte im Netz.</li></ul>
+      <ul><li>Die <b>Netzadresse</b>: alle Hostbits sind 0. Sie bezeichnet das Netz selbst und ist immer die erste Adresse des Subnetzes.</li><li>Die <b>Broadcastadresse</b>: alle Hostbits sind 1. Sie erreicht alle Geräte im Netz und ist immer die letzte Adresse des Subnetzes.</li></ul>
       <div class="merke"><b>Formel:</b> Nutzbare Hosts = 2<sup>Hostbits</sup> − 2. Beispiel /26: 6 Hostbits, also 2<sup>6</sup> − 2 = 62 Hosts.</div>
       <p>Das Default-Gateway ist übrigens ein ganz normaler Host und verbraucht eine dieser nutzbaren Adressen.</p>`,
     },
@@ -125,6 +127,7 @@ export const subnetting = {
       h: 'Ein Netz in Subnetze aufteilen',
       html: `<p>Um ein Netz aufzuteilen, „leiht“ man sich Bits aus dem Hostanteil und schlägt sie dem Netzanteil zu. Mit n geliehenen Bits entstehen 2<sup>n</sup> Subnetze. Dafür hat jedes Subnetz weniger Hosts.</p>
       <div class="rechnung"><p>Beispiel: 192.168.0.0/24 soll in 8 gleich große Netze geteilt werden.</p><p>2<sup>3</sup> = 8, also werden 3 Bit geliehen. Das neue Präfix ist /24 + 3 = /27.</p><p>Jedes Subnetz hat 2<sup>5</sup> − 2 = 30 Hosts. Die Netze beginnen bei .0, .32, .64, .96, .128, .160, .192 und .224.</p></div>
+      <p>In einer typischen Prüfungsfrage wird zusätzlich gefragt, wie viele Hosts man in allen Subnetzen zusammen nutzen kann. Im Beispiel oben sind das 8 Subnetze mal 30 Hosts, also 240. Gegenüber dem ungeteilten /24 mit 254 Hosts verliert man 14 Adressen, weil jedes Subnetz eine eigene Netz- und Broadcastadresse braucht.</p>
       <p>Braucht man eine Anzahl, die keine Zweierpotenz ist, zum Beispiel 5 Netze, nimmt man die nächstgrößere Zweierpotenz. Für 5 Netze braucht man also 3 Bit (8 Netze), und 3 Netze bleiben als Reserve.</p>
       <p>Früher teilte man nur an den Oktettgrenzen: /8 (Klasse A), /16 (Klasse B) und /24 (Klasse C). Heute arbeitet man klassenlos und kann die Grenze an jedes Bit setzen.</p>`,
     },
@@ -159,6 +162,10 @@ export const subnetting = {
     { id: 's15', type: 'mc', q: '10.0.0.0/8 soll mindestens <b>1000 Subnetze</b> bekommen. Welches Präfix?', options: ['/18', '/17', '/19', '/20'], answer: 0, explain: '2<sup>10</sup> = 1024 reicht für 1000 Netze. Man leiht also 10 Bit: /8 + 10 = /18.' },
     { id: 's16', type: 'tf', q: 'Ein Router leitet Broadcasts normalerweise in andere Netze weiter.', answer: false, explain: 'Router begrenzen Broadcast-Domänen. Genau deshalb macht Subnetting die Broadcast-Domänen kleiner.' },
     { id: 's17', type: 'mc', q: 'Welches Präfix ist bei IPv6 für ein normales Subnetz üblich?', options: ['/64', '/24', '/48', '/128'], answer: 0, explain: 'IPv6-Netze sind in der Regel /64 groß. Bits zu leihen ist dort meist nicht nötig.' },
+    { id: 's18', type: 'multi', q: 'Womit lässt sich eine Broadcast-Domäne in kleinere Broadcast-Domänen unterteilen?', options: ['Mit einem Router', 'Mit VLANs', 'Mit Subnetzen', 'Mit einem Switch ohne VLANs'], answer: [0, 1, 2], explain: 'Ein einfacher Switch leitet Broadcasts an alle Ports weiter, er vergrößert die Broadcast-Domäne also eher. Trennen kann man sie erst mit Routern, Subnetzen oder VLANs.' },
+    { id: 's19', type: 'tf', q: 'Die Broadcastadresse ist immer die letzte Adresse eines Subnetzes.', answer: true, explain: 'Bei der Broadcastadresse sind alle Hostbits 1. Das ist die höchste Adresse im Subnetz. Die Netzadresse ist entsprechend die erste.' },
+    { id: 's20', type: 'input', q: '192.168.30.0/24 wird in <b>8</b> gleich große Subnetze geteilt. Wie viele Host-Adressen kann man in <b>allen 8 Subnetzen zusammen</b> nutzen?', accept: ['240'], explain: 'Für 8 Subnetze leiht man 3 Bit, das ergibt /27 mit 32 Adressen pro Subnetz. Davon sind 30 nutzbar. 8 · 30 = 240.' },
+    { id: 's21', type: 'mc', q: 'Wie ist eine IPv4-Adresse aufgebaut?', options: ['32 Bit, dargestellt als vier Oktette mit Werten von 0 bis 255', '48 Bit, dargestellt als sechs Hex-Paare', '128 Bit, dargestellt als acht Hex-Blöcke', '32 Bit, dargestellt als acht Hex-Blöcke'], answer: 0, explain: 'IPv4 hat 32 Bit, aufgeteilt in vier Oktette zu je 8 Bit. Jedes Oktett kann Werte von 0 bis 255 annehmen. 48 Bit hat die MAC-Adresse, 128 Bit eine IPv6-Adresse.' },
   ],
   pairs: [
     { title: 'Präfix und Subnetzmaske', items: [['/25', '255.255.255.128'], ['/26', '255.255.255.192'], ['/27', '255.255.255.224'], ['/28', '255.255.255.240'], ['/29', '255.255.255.248'], ['/30', '255.255.255.252']] },
@@ -173,6 +180,8 @@ export const subnetting = {
     ['In welcher Reihenfolge vergibt man Netze bei VLSM?', 'Vom größten zum kleinsten Netz.'],
     ['Wozu dient Supernetting?', 'Es fasst Netze zusammen, damit der Router weniger Einträge in seiner Routing-Tabelle braucht.'],
     ['Was ist eine Broadcast-Domäne?', 'Der Bereich, den ein Broadcast erreicht. Router begrenzen ihn.'],
+    ['Womit unterteilt man eine Broadcast-Domäne?', 'Mit Routern, Subnetzen oder VLANs. Hubs und einfache Switches tun das nicht.'],
+    ['Welche Adresse ist die erste und welche die letzte eines Subnetzes?', 'Die erste ist die Netzadresse, die letzte die Broadcastadresse.'],
   ],
 };
 
@@ -206,6 +215,19 @@ export const protokollmodelle = {
       <p>Je nach Schicht hat die Dateneinheit einen eigenen Namen. Auf Schicht 4 spricht man von einem <b>Segment</b>, auf Schicht 3 von einem <b>Paket</b>, auf Schicht 2 von einem <b>Frame</b> und auf Schicht 1 von <b>Bits</b>.</p>`,
     },
     {
+      h: 'Transport- und anwendungsorientierte Schichten',
+      html: `<p>Die sieben Schichten werden oft in zwei Gruppen eingeteilt:</p>
+      <p>Die <b>transportorientierten Schichten</b> sind die Schichten 1 bis 4. Sie sorgen dafür, dass die Daten überhaupt vom einen Rechner zum anderen kommen.</p>
+      <ul><li><b>Schicht 1</b> überträgt die einzelnen Bits über das Medium, also über Kabel oder Funk.</li>
+      <li><b>Schicht 2</b> teilt den Bitstrom in Frames auf, ergänzt Prüfsummen und regelt den Zugriff auf das Medium. Fehler bei der Übertragung zwischen zwei direkt verbundenen Geräten werden hier erkannt.</li>
+      <li><b>Schicht 3</b> vergibt netzübergreifende Adressen (IPv4, IPv6) und bestimmt den Weg durch die Netze, also das Routing. Hier werden Pakete bei Bedarf auch in kleinere Stücke zerlegt (Fragmentierung).</li>
+      <li><b>Schicht 4</b> ordnet die Daten über Portnummern der richtigen Anwendung zu, teilt sie in Segmente auf und sorgt dafür, dass sie vollständig und in der richtigen Reihenfolge ankommen.</li></ul>
+      <p>Die <b>anwendungsorientierten Schichten</b> sind die Schichten 5 bis 7. Sie kümmern sich darum, was mit den Daten passiert, wenn sie angekommen sind.</p>
+      <ul><li><b>Schicht 5</b> baut Sitzungen zwischen Anwendungen auf, verwaltet sie und beendet sie wieder.</li>
+      <li><b>Schicht 6</b> sorgt dafür, dass beide Seiten die Daten im selben Format verstehen. Hier passieren Umwandlung, Kompression und Verschlüsselung.</li>
+      <li><b>Schicht 7</b> ist die Schnittstelle zu den Anwendungen und Diensten, die der Benutzer verwendet.</li></ul>`,
+    },
+    {
       h: 'Das TCP/IP-Modell',
       html: `<p>Das TCP/IP-Modell entstand schon in den 1970er Jahren und ist auch als Internet-Modell bekannt. Es ist ein offener Standard, den kein einzelnes Unternehmen kontrolliert. Es konzentriert sich auf die Kommunikation und hat nur <b>vier Schichten</b>.</p>
       <table><tr><th>TCP/IP-Schicht</th><th>entspricht OSI</th></tr>
@@ -213,7 +235,13 @@ export const protokollmodelle = {
       <tr><td>Transport</td><td>4</td></tr>
       <tr><td>Internet</td><td>3</td></tr>
       <tr><td>Netzzugang</td><td>1 und 2</td></tr></table>
-      <div class="merke"><b>Für Geräte gilt:</b> Ein Hub arbeitet auf Schicht 1, ein Switch auf Schicht 2, ein Router auf Schicht 3.</div>`,
+      <p>Welche Geräte und Protokolle auf welcher Schicht arbeiten, wird in Prüfungen gern abgefragt:</p>
+      <table><tr><th>Schicht</th><th>Geräte</th><th>Protokolle</th></tr>
+      <tr><td>1 Bitübertragung</td><td>Hub, Repeater (Signalverstärker)</td><td>–</td></tr>
+      <tr><td>2 Sicherung</td><td>Layer-2-Switch, Bridge</td><td>Ethernet, ARP arbeitet zwischen Schicht 2 und 3</td></tr>
+      <tr><td>3 Vermittlung</td><td>Router, Layer-3-Switch</td><td>IP, ICMP (zum Beispiel ping), IPsec</td></tr>
+      <tr><td>4 Transport</td><td>–</td><td>TCP, UDP</td></tr></table>
+      <div class="merke"><b>Kurz gesagt:</b> Hub und Repeater auf Schicht 1, Switch und Bridge auf Schicht 2, Router auf Schicht 3.</div>`,
     },
   ],
   questions: [
@@ -232,9 +260,16 @@ export const protokollmodelle = {
     { id: 'o13', type: 'mc', q: 'Auf welcher Schicht arbeitet ein <b>Hub</b>?', options: ['Schicht 1', 'Schicht 2', 'Schicht 3', 'Schicht 7'], answer: 0, explain: 'Ein Hub wertet keine Adressen aus. Er verstärkt nur das Signal und gibt es an alle Anschlüsse weiter.' },
     { id: 'o14', type: 'tf', q: 'Das TCP/IP-Modell ist ein offener Standard, den kein einzelnes Unternehmen kontrolliert.', answer: true, explain: 'So steht es auch in den Unterlagen. Alle TCP/IP-Protokolle folgen diesem Modell.' },
     { id: 'o15', type: 'mc', q: 'Zu welcher OSI-Schicht gehört das Protokoll <b>IP</b>?', options: ['Schicht 3', 'Schicht 4', 'Schicht 2', 'Schicht 5'], answer: 0, explain: 'IP ist das zentrale Protokoll der Vermittlungsschicht.' },
+    { id: 'o16', type: 'mc', q: 'Welche Schichten des OSI-Modells nennt man <b>transportorientiert</b>?', options: ['Die Schichten 1 bis 4', 'Die Schichten 5 bis 7', 'Nur Schicht 4', 'Die Schichten 1 bis 3'], answer: 0, explain: 'Die Schichten 1 bis 4 sorgen dafür, dass die Daten beim anderen Rechner ankommen. Die Schichten 5 bis 7 heißen anwendungsorientiert.' },
+    { id: 'o17', type: 'mc', q: 'Welche Schichten des OSI-Modells nennt man <b>anwendungsorientiert</b>?', options: ['Die Schichten 5 bis 7', 'Die Schichten 1 bis 4', 'Nur Schicht 7', 'Die Schichten 4 bis 7'], answer: 0, explain: 'Sitzung, Darstellung und Anwendung kümmern sich darum, was mit den Daten passiert, wenn sie angekommen sind.' },
+    { id: 'o18', type: 'multi', q: 'Welche Protokolle arbeiten auf der <b>Vermittlungsschicht</b> (Schicht 3)?', options: ['IP', 'ICMP', 'IPsec', 'TCP'], answer: [0, 1, 2], explain: 'IP, ICMP und IPsec gehören zu Schicht 3. TCP und UDP arbeiten eine Schicht höher, auf der Transportschicht.' },
+    { id: 'o19', type: 'mc', q: 'Auf welcher Schicht arbeitet eine <b>Bridge</b>?', options: ['Schicht 2', 'Schicht 1', 'Schicht 3', 'Schicht 4'], answer: 0, explain: 'Eine Bridge verbindet Netzsegmente anhand von MAC-Adressen, genau wie ein Switch. Damit gehört sie zur Sicherungsschicht.' },
+    { id: 'o20', type: 'mc', q: 'Auf welcher Schicht arbeitet ein <b>Repeater</b>?', options: ['Schicht 1', 'Schicht 2', 'Schicht 3', 'Schicht 7'], answer: 0, explain: 'Ein Repeater verstärkt nur das Signal, ohne Adressen auszuwerten. Wie der Hub gehört er zur Bitübertragungsschicht.' },
+    { id: 'o21', type: 'mc', q: 'Auf welcher Schicht werden Daten über <b>Portnummern</b> einer Anwendung zugeordnet und in <b>Segmente</b> aufgeteilt?', options: ['Schicht 4', 'Schicht 3', 'Schicht 2', 'Schicht 5'], answer: 0, explain: 'Das ist die Aufgabe der Transportschicht mit TCP und UDP.' },
   ],
   pairs: [
     { title: 'OSI-Nummer und Name', items: [['Schicht 1', 'Bitübertragung'], ['Schicht 2', 'Sicherung'], ['Schicht 3', 'Vermittlung'], ['Schicht 4', 'Transport'], ['Schicht 5', 'Sitzung'], ['Schicht 6', 'Darstellung'], ['Schicht 7', 'Anwendung']] },
+    { title: 'Gerät und Schicht', items: [['Hub', 'Schicht 1'], ['Repeater', 'Schicht 1'], ['Bridge', 'Schicht 2'], ['Layer-2-Switch', 'Schicht 2'], ['Router', 'Schicht 3'], ['Layer-3-Switch', 'Schicht 3']] },
     { title: 'Was gehört auf welche Schicht?', items: [['HTTP', 'Schicht 7'], ['TCP', 'Schicht 4'], ['IP', 'Schicht 3'], ['MAC-Adresse', 'Schicht 2'], ['Patchkabel', 'Schicht 1'], ['Router', 'Schicht 3']] },
   ],
   order: [
@@ -248,5 +283,8 @@ export const protokollmodelle = {
     ['Was ist ein SAP?', 'Der Service Access Point, die genormte Schnittstelle zwischen zwei benachbarten Schichten.'],
     ['Wie heißen die Dateneinheiten auf Schicht 4, 3, 2 und 1?', 'Segment, Paket, Frame, Bits'],
     ['Auf welchen Schichten arbeiten Hub, Switch und Router?', 'Hub auf Schicht 1, Switch auf Schicht 2, Router auf Schicht 3.'],
+    ['Was sind die transport- und die anwendungsorientierten Schichten?', 'Transportorientiert: Schichten 1 bis 4. Anwendungsorientiert: Schichten 5 bis 7.'],
+    ['Welche Protokolle arbeiten auf Schicht 3 und 4?', 'Schicht 3: IP, ICMP, IPsec. Schicht 4: TCP, UDP.'],
+    ['Auf welchen Schichten arbeiten Repeater und Bridge?', 'Der Repeater auf Schicht 1, die Bridge auf Schicht 2.'],
   ],
 };
