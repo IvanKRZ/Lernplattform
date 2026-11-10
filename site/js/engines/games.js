@@ -1,5 +1,5 @@
 // Zuordnen und Reihenfolge
-import { h, add, clear, shuffle, toast, confetti, fmtTime, every } from '../ui.js';
+import { h, add, clear, shuffle, toast, fmtTime, every } from '../ui.js';
 import * as store from '../store.js';
 
 // ---------- Zuordnen (Memory-artig, zwei Spalten) ----------
@@ -44,7 +44,6 @@ export function playMatch(el, set, { topicKey, backHref, next } = {}) {
     store.record(topicKey, mistakes <= 1);
     const xp = Math.max(5, pairs.length * 3 - mistakes * 2);
     store.addXP(xp);
-    if (ok) confetti(40);
     setTimeout(() => {
       add(el, h('div', { class: 'end small-end' },
         h('h3', {}, ok ? 'Alles fehlerfrei zugeordnet.' : `Geschafft, mit ${mistakes} Fehlversuch${mistakes === 1 ? '' : 'en'}.`),
@@ -83,7 +82,6 @@ export function playOrder(el, set, { topicKey, backHref, next } = {}) {
   function finish() {
     store.record(topicKey, mistakes <= 1);
     const xp = Math.max(5, 15 - mistakes * 3); store.addXP(xp);
-    if (!mistakes) confetti(40);
     add(el, h('div', { class: 'end small-end' },
       h('h3', {}, mistakes ? `Fertig, mit ${mistakes} Fehlversuch${mistakes === 1 ? '' : 'en'}.` : 'Alles in der richtigen Reihenfolge.'),
       h('p', { class: 'muted' }, `Du bekommst ${xp} Punkte.`),

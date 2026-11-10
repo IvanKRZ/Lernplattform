@@ -1,5 +1,6 @@
 // Ablauf für eine Folge von Aufgaben: Quiz, Fälle, Diagnose, Klausur
-import { h, add, clear, toast, fmtTime, every, confetti } from '../ui.js';
+import { h, add, clear, toast, fmtTime, every } from '../ui.js';
+import { topicByKey } from './pool.js';
 import { renderItem } from './item.js';
 import * as store from '../store.js';
 
@@ -72,9 +73,10 @@ export function runItems(el, items, cfg = {}) {
     add(stage, renderItem(item, {
       exam: cfg.exam,
       label: `Aufgabe ${i + 1} von ${items.length}`,
+      topic: cfg.showTopic ? topicByKey(item.topicKey) : null,
       onAnswer(ok, given, usedHint) {
         results.push({ item, ok, given });
-        store.record(item.topicKey, ok);
+        store.record(item.topicKey, ok, item.track ? item.ref : null);
         if (ok) {
           combo++;
           if (!cfg.exam) {
@@ -97,15 +99,14 @@ export function defaultEnd(el, results, items, cfg) {
   clear(el);
   const ok = results.filter(r => r.ok).length;
   const pct = results.length ? Math.round(ok / results.length * 100) : 0;
-  if (pct >= 80) confetti();
   const wrong = results.filter(r => !r.ok);
   add(el, 
     h('div', { class: 'end' },
-      h('div', { class: 'end-ring', style: { '--p': pct } }, h('b', {}, pct + '%')),
+      h('p', { class: 'end-score' }, h('b', {}, `${ok} von ${results.length}`), ' richtig, das sind ', h('b', {}, `${pct} %`), '.'),
       h('h2', {}, pct >= 90 ? 'Das sitzt.' : pct >= 70 ? 'Gut gemacht.' : pct >= 50 ? 'Die Grundlage ist da.' : 'Hier lohnt sich Üben.'),
-      h('p', { class: 'muted' }, `${ok} von ${results.length} richtig`),
+      h('p', { class: 'muted' }, cfg.endNote || 'Richtig beantwortete Fragen legt Lernstack dir in größer werdenden Abständen wieder vor, falsch beantwortete schon morgen.'),
       h('div', { class: 'row center' },
-        wrong.length ? h('button', { class: 'btn btn-primary', onclick: () => runItems(el, wrong.map(r => r.item), { ...cfg, title: 'Fehler wiederholen' }) }, wrong.length === 1 ? 'Den Fehler wiederholen' : `Die ${wrong.length} Fehler wiederholen`) : null,
+        wrong.length ? h('button', { class: 'btn btn-primary', onclick: () => runItems(el, wrong.map(r => r.item), { ...cfg, title: 'Fehler wiederholen', intro: null, endNote: null }) }, wrong.length === 1 ? 'Den Fehler wiederholen' : `Die ${wrong.length} Fehler wiederholen`) : null,
         cfg.again ? h('button', { class: 'btn', onclick: cfg.again }, 'Neue Runde') : null,
         cfg.backHref ? h('a', { class: 'btn btn-ghost', href: cfg.backHref }, 'Zurück') : null,
       ),

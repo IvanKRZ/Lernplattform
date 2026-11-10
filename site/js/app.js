@@ -1,40 +1,51 @@
-import { h, add, clear, clearKeys, clearTimers, confetti, toast } from './ui.js';
+import { h, add, clear, clearKeys, clearTimers, toast, dialog, inkOn, pick } from './ui.js';
 import * as store from './store.js';
+import * as account from './account.js';
 import { subjects, byId } from '../content/subjects.js';
 import { runItems, reviewList } from './engines/runner.js';
-import { quizRound, caseItems, examItems, diagItems, tKey, genRegistry } from './engines/pool.js';
+import { renderItem, fromGen } from './engines/item.js';
+import { quizRound, caseItems, examItems, diagItems, dailyItems, dueItems, coverage, tKey, genRegistry } from './engines/pool.js';
 import { playMatch, playOrder } from './engines/games.js';
 import { arcadeMenu, playArcade } from './engines/arcade.js';
 import { journeyMenu, playJourney } from './engines/journey.js';
+import { viewLogin, viewRegister, viewAccount, viewForcedPassword } from './views/account.js';
+import { viewAdmin } from './views/admin.js';
 
 const app = document.getElementById('app');
-const hud = document.getElementById('hud');
+const nav = document.getElementById('nav');
+const side = document.getElementById('side');
+const S = subjects.find(s => s.status === 'aktiv');   // Zurzeit gibt es genau ein Fach.
 
-// ---------- Kopfzeile: Stufe und Punkte ----------
-function drawHud() {
-  const L = store.levelInfo();
-  const days = store.streak();
-  clear(hud).append(
-    h('a', { class: 'hud', href: '#/profil', title: `Noch ${L.toNext} Punkte bis Stufe ${L.level + 1}` },
-      h('span', { class: 'hud-level' }, `Stufe ${L.level}`),
-      h('span', { class: 'hud-title' }, L.title),
-      h('span', { class: 'hud-bar', 'aria-hidden': 'true' }, h('i', { style: { width: (L.progress * 100) + '%' } })),
-      h('span', { class: 'hud-points' }, `${store.get().xp} Punkte`),
-      days > 1 ? h('span', { class: 'hud-days' }, `${days} Tage in Folge`) : null,
-    ),
+// ---------- Kopfzeile ----------
+function drawChrome() {
+  const here = location.hash.replace(/^#\/?/, '').split('/')[0] || '';
+  const u = account.current();
+  const link = (href, text, on) => h('a', { href, 'aria-current': on ? 'page' : null }, text);
+  clear(nav).append(
+    link('#/', 'Heute', here === ''),
+    link(`#/f/${S.id}`, 'Themen', here === 'f'),
+    link('#/profil', 'Fortschritt', here === 'profil'),
+    ...(account.isAdmin() ? [link('#/verwaltung', 'Verwaltung', here === 'verwaltung')] : []),
   );
+  const L = store.levelInfo();
+  clear(side).append(...[
+    store.syncStatus() === 'offline' ? h('span', { class: 'sync-warn', title: 'Deine Antworten sind in diesem Browser gesichert und werden nachgetragen, sobald der Server wieder erreichbar ist.' }, 'Nicht gespeichert') : null,
+    u ? h('a', { class: 'who', href: '#/konto', 'aria-current': here === 'konto' ? 'page' : null, title: `Stufe ${L.level}, ${L.title}. Zum Konto.` }, h('b', {}, u.name), h('span', {}, `Stufe ${L.level}`))
+      : account.isAvailable() ? h('a', { class: 'who who-guest', href: '#/anmelden', 'aria-current': here === 'anmelden' || here === 'registrieren' ? 'page' : null }, 'Anmelden') : null,
+  ].filter(Boolean));
 }
 store.onChange(e => {
-  drawHud();
-  if (e.type === 'xp' && e.levelUp) { confetti(70); toast(`Stufe ${e.level} erreicht: ${store.levelInfo().title}`, 'level', 3500); }
+  if (e.type === 'xp' && e.levelUp) toast(`Stufe ${e.level} erreicht: ${store.levelInfo().title}`, 'level', 3500);
+  if (e.type === 'signed-out') { account.leave(); toast('Deine Sitzung ist abgelaufen. Melde dich wieder an, damit dein Fortschritt gespeichert wird.', 'warn', 6000); }
+  if (e.type === 'reset' && e.reason === 'conflict') { toast('Auf einem anderen Gerät wurde weitergelernt. Der neuere Stand wurde geladen.', 'info', 5000); route(); }
+  if (e.type === 'reset' && e.reason === 'refresh' && isOverview()) route();
+  if (e.type !== 'answer') drawChrome();
 });
+account.onChange(() => drawChrome());
+// Seiten, die man gefahrlos neu zeichnen kann (keine laufende Aufgabe)
+const isOverview = () => /^#?\/?(profil|f\/[^/]+)?$/.test(location.hash);
 
 // ---------- Hilfen ----------
-const pct = m => m == null ? 'noch nicht geübt' : `${Math.round(m * 100)} % richtig`;
-function subjectMastery(s) {
-  const ms = s.topics.map(t => store.mastery(tKey(s, t))).filter(x => x != null);
-  return ms.length ? ms.reduce((a, b) => a + b, 0) / ms.length : null;
-}
 function grade(p) {
   if (p >= 92) return [1, 'sehr gut'];
   if (p >= 81) return [2, 'gut'];
@@ -44,159 +55,267 @@ function grade(p) {
   return [6, 'ungenügend'];
 }
 function notFound() {
-  add(app, h('div', { class: 'page-head' }, h('h1', {}, 'Diese Seite gibt es nicht.'), h('p', {}, h('a', { href: '#/' }, 'Zur Startseite'))));
+  add(app, h('div', { class: 'page-head' }, h('h1', {}, 'Diese Seite gibt es nicht.'), h('p', { class: 'lead' }, h('a', { href: '#/' }, 'Zur Startseite'))));
 }
 const crumb = (href, text) => h('a', { class: 'crumb', href }, text);
+const topicNo = t => S.topics.indexOf(t) + 1;
+const tab = (t, extra = '') => h('span', { class: `tab ${extra}`, style: { '--c': t.color, '--on': inkOn(t.color) }, 'aria-hidden': 'true' }, topicNo(t));
+const plural = (n, one, many) => `${n} ${n === 1 ? one : many}`;
 
-// Themenliste: jede Zeile mit Farbmarke, Titel, kurzer Beschreibung und Fortschritt.
-// rows = [{ label, desc, value (0..1 oder null), note, href, color, off }]
-const levelOf = v => v == null ? ['none', 'noch nicht geübt'] : v >= 0.85 ? ['ok', 'sitzt'] : v >= 0.5 ? ['mid', 'fast sicher'] : ['bad', 'üben'];
-function topicList(rows, { label = 'Themen', legend = true } = {}) {
-  return h('div', { class: 'tlist-wrap' },
-    h('ul', { class: 'tlist', 'aria-label': label }, rows.map((r, i) => {
-      const [lv, word] = levelOf(r.value);
-      const segs = r.value == null ? 0 : Math.round(r.value * 10);
-      const inner = [
-        h('span', { class: 'tl-mark', 'aria-hidden': 'true' }),
-        h('span', { class: 'tl-text' }, h('b', {}, r.label), r.desc ? h('span', {}, r.desc) : null),
-        r.off ? h('span', { class: 'tl-soon' }, 'folgt')
-          : h('span', { class: `tl-state lv-${lv}` },
-            h('span', { class: 'meter', 'aria-hidden': 'true' }, Array.from({ length: 10 }, (_, k) => h('i', { class: k < segs ? 'on' : '' }))),
-            h('span', { class: 'tl-word' }, r.value == null ? word : `${Math.round(r.value * 100)} %, ${word}`),
-            r.note ? h('small', {}, r.note) : null),
-      ];
-      return h('li', { style: { '--c': r.color || 'var(--rule)', '--d': `${i * 40}ms` } },
-        r.off ? h('div', { class: 'trow is-off' }, inner) : h('a', { class: 'trow', href: r.href }, inner));
-    })),
-    legend ? h('p', { class: 'tl-legend' }, 'Der Balken zeigt, wie viele deiner letzten Antworten zu einem Thema richtig waren. Ab 85 % gilt ein Thema als sicher.') : null,
+// Abschnitt mit Überschrift in der Randspalte, Inhalt daneben
+function sec(title, note, ...content) {
+  return h('section', { class: 'sec' },
+    h('div', { class: 'sec-head' }, h('h2', {}, title), note ? h('p', {}, note) : null),
+    h('div', { class: 'sec-body' }, content),
   );
 }
 
-// ---------- Startseite ----------
-function viewHome() {
-  const s0 = subjects.find(s => s.status === 'aktiv');
-  add(app, 
-    h('section', { class: 'home-head' },
-      h('h1', {}, 'Für die Klausur üben, in kurzen Runden.'),
-      h('p', { class: 'lead' }, 'Lernstack ist die Übungsseite unserer FISI-Klasse. Statt seitenlang zu lesen, beantwortest du Fragen, rechnest auf Zeit, verfolgst Datenpakete durchs Netz oder schreibst eine Probeklausur. Nach jeder Antwort siehst du sofort, ob sie stimmt und warum.'),
-      h('div', { class: 'row' },
-        h('a', { class: 'btn btn-primary btn-lg', href: `#/f/${s0.id}/diagnose` }, 'Mit der Einstufung beginnen'),
-        h('a', { class: 'btn btn-lg', href: `#/f/${s0.id}` }, `${s0.title} ansehen`),
+// Inhaltsverzeichnis: eine Zeile pro Thema mit Kapitelnummer, Titel und Stand.
+const levelOf = v => v == null ? ['none', 'noch nicht geübt'] : v >= 0.85 ? ['ok', 'sitzt'] : v >= 0.5 ? ['mid', 'fast sicher'] : ['bad', 'üben'];
+function meter(value) {
+  const [lv, word] = levelOf(value);
+  const segs = value == null ? 0 : Math.round(value * 10);
+  return h('span', { class: `state lv-${lv}` },
+    h('span', { class: 'meter', 'aria-hidden': 'true' }, Array.from({ length: 10 }, (_, k) => h('i', { class: k < segs ? 'on' : '' }))),
+    h('span', { class: 'state-word' }, value == null ? word : `${Math.round(value * 100)} %, ${word}`));
+}
+function tocList(topics, { desc = true, note = topicNote, value = t => store.mastery(tKey(S, t)) } = {}) {
+  return h('ol', { class: `toc-list${desc ? '' : ' is-compact'}` }, topics.map(t => h('li', {},
+    h('a', { class: 'toc-row', href: `#/f/${S.id}/t/${t.id}` },
+      tab(t),
+      h('span', { class: 'toc-text' }, h('b', {}, t.title), desc ? h('span', {}, t.blurb) : null),
+      h('span', { class: 'toc-state' }, meter(value(t)), note ? h('small', {}, note(t)) : null),
+    ))));
+}
+function topicNote(t) {
+  const c = coverage(S, t);
+  if (!c.seen) return `${c.total} Fragen`;
+  return `${c.seen} von ${c.total} Fragen gesehen${c.due ? `, ${c.due} fällig` : ''}`;
+}
+const LEGEND = 'Der Balken zeigt den Anteil richtiger Antworten unter deinen letzten 25 zu diesem Thema. Ab 85 % gilt ein Thema als sicher.';
+
+// Übungsformen, die quer durch alle Themen gehen
+function modeList() {
+  const diag = store.getDiag(S.id);
+  const examBest = store.getBest(`exam:${S.id}`);
+  const arcadeBest = Math.max(...['zahlen', 'subnet', 'sonst', 'mix'].map(k => store.getBest(`arcade:${k}`)));
+  const due = dueItems(S).length;
+  const rows = [
+    [`#/f/${S.id}/runde`, 'Tagesrunde', 'Fällige Wiederholungen aus allen Themen, dazu ein paar neue Fragen und zwei Rechenaufgaben. Etwa zehn Minuten.', due ? `${plural(due, 'Frage', 'Fragen')} fällig` : 'nichts fällig'],
+    [`#/f/${S.id}/klausur`, 'Probeklausur', `${S.exam.count} Aufgaben in ${S.exam.minutes} Minuten, ohne Rückmeldung zwischendurch. Am Ende steht eine Note nach dem IHK-Schlüssel.`, examBest ? `bestes Ergebnis ${examBest} %` : 'noch nicht geschrieben'],
+    [`#/f/${S.id}/arcade`, 'Rechentraining', 'Subnetting, Zahlensysteme und weitere Rechnungen, wahlweise auf Zeit. Bei einem Fehler siehst du den vollständigen Rechenweg.', arcadeBest ? `Rekord ${arcadeBest} Punkte` : 'noch kein Rekord'],
+    [`#/f/${S.id}/reise`, 'Paketreise', 'Du verfolgst ein Paket Hop für Hop durchs Netz und entscheidest an jeder Station, was mit MAC-Adressen, IP-Adressen und Ports passiert.', plural(S.journeys.length, 'Strecke', 'Strecken')],
+    [`#/f/${S.id}/faelle`, 'Fehlersuche', 'Störungsmeldungen mit Befehlsausgaben wie ipconfig oder ping. Du grenzt die Ursache ein, wie im Support.', plural(S.cases.length, 'Fall', 'Fälle')],
+    [`#/f/${S.id}/diagnose`, 'Einstufung', '30 Fragen, drei aus jedem Thema. Das Ergebnis zeigt, welche Themen schon sitzen und wo du ansetzen solltest.', diag ? `zuletzt ${diagAvg(diag)} % richtig` : 'noch nicht gemacht'],
+  ];
+  return h('ul', { class: 'modes' }, rows.map(([href, title, text, stat]) => h('li', {},
+    h('a', { href }, h('b', {}, title), h('span', { class: 'modes-text' }, text), h('span', { class: 'modes-stat' }, stat)))));
+}
+function diagAvg(d) {
+  const v = Object.values(d.result || {}).filter(x => typeof x === 'number');
+  return v.length ? Math.round(v.reduce((a, b) => a + b, 0) / v.length * 100) : 0;
+}
+
+// Die letzten 14 Tage als Reihe von Kästchen
+function week() {
+  const days = store.activity(14);
+  const streak = store.streak();
+  const sum = days.slice(-7).reduce((a, d) => a + d.count, 0);
+  return h('div', { class: 'week' },
+    h('ol', { class: 'week-days', 'aria-label': 'Antworten an den letzten 14 Tagen' }, days.map((d, i) => h('li', {
+      class: d.count >= 10 ? 'd2' : d.count ? 'd1' : '', 'data-today': i === days.length - 1 ? 'true' : null,
+      title: `${d.date.toLocaleDateString('de-DE', { weekday: 'long', day: 'numeric', month: 'long' })}: ${plural(d.count, 'Antwort', 'Antworten')}`,
+    }, h('span', { 'aria-hidden': 'true' }, d.date.toLocaleDateString('de-DE', { weekday: 'short' }).slice(0, 2)), h('i', {}, d.count || '')))),
+    h('p', {}, streak > 1 ? `${streak} Tage in Folge gelernt. ` : '', sum ? `${plural(sum, 'Antwort', 'Antworten')} in den letzten sieben Tagen.` : 'In den letzten sieben Tagen hast du noch nichts beantwortet.'),
+  );
+}
+
+// ---------- Startseite ohne Lernstand: zeigt, was Lernstack ist, mit einer echten Aufgabe ----------
+function viewLanding() {
+  const demo = h('div', { class: 'demo-stage' });
+  const demoGens = ['hosts', 'netid', 'cidr2mask', 'bin2dec', 'broadcast'].map(id => genRegistry[id]).filter(Boolean);
+  // Die erste Aufgabe zieht den Fokus nicht an sich, sonst springt auf dem Handy sofort die Tastatur auf.
+  function nextDemo(focus = true) {
+    const g = pick(demoGens);
+    clear(demo).append(renderItem(fromGen(g, g.make(1), `${S.id}/${g.topic}`), { label: g.title, focus, onNext: () => nextDemo() }));
+  }
+  nextDemo(false);
+  const canRegister = account.isAvailable() && account.registrationMode() !== 'closed';
+  add(app,
+    h('section', { class: 'landing' },
+      h('div', { class: 'landing-text' },
+        h('h1', {}, 'Netzwerktechnik lernen, bis es in der Prüfung sitzt.'),
+        h('p', { class: 'lead' }, 'Lernstack ist eine Lernplattform für Fachinformatikerinnen und Fachinformatiker in Ausbildung und Umschulung. Du arbeitest zehn Themen von Zahlensystemen bis VPN durch, beantwortest Fragen dazu und bekommst jede Frage wieder vorgelegt, kurz bevor du sie vergessen würdest.'),
+        h('div', { class: 'row' },
+          canRegister ? h('a', { class: 'btn btn-primary btn-lg', href: '#/registrieren' }, 'Konto anlegen') : null,
+          h('a', { class: `btn btn-lg${canRegister ? '' : ' btn-primary'}`, href: `#/f/${S.id}/diagnose` }, 'Ohne Konto mit der Einstufung starten'),
+        ),
+        account.isAvailable() ? h('p', { class: 'small muted' }, 'Mit Konto wird dein Lernstand gespeichert und ist auf jedem Gerät derselbe. Ohne Konto bleibt er nur in diesem Browser. ', h('a', { href: '#/anmelden' }, 'Du hast schon ein Konto? Anmelden')) : null,
+      ),
+      h('div', { class: 'demo' },
+        h('p', { class: 'demo-cap' }, 'Eine Aufgabe zum Ausprobieren, direkt hier:'),
+        demo,
       ),
     ),
-    h('h2', { class: 'section' }, 'Fächer'),
-    h('p', { class: 'section-intro' }, 'Weitere Fächer kommen mit den nächsten Klausuren dazu.'),
-    topicList(subjects.map(s => {
-      const on = s.status === 'aktiv';
-      return { label: s.title, desc: on ? `${s.topics.length} Themen. ${s.desc}` : s.desc, value: on ? subjectMastery(s) : null, href: `#/f/${s.id}`, color: on ? 'var(--primary)' : null, off: !on };
-    }), { label: 'Fächer', legend: false }),
-    h('h2', { class: 'section' }, 'So lernst du hier am besten'),
-    h('ol', { class: 'steps' },
-      h('li', {}, h('b', {}, 'Einstufung machen.'), ' 30 Fragen aus allen Themen, das dauert etwa 15 Minuten. Danach siehst du, welche Themen schon sitzen und wo du ansetzen solltest.'),
-      h('li', {}, h('b', {}, 'Die schwachen Themen üben.'), ' Lies die Lernseite des Themas und übe dann mit Quiz, Zuordnen oder Reihenfolge. Rechenthemen trainierst du in der Rechen-Arcade.'),
-      h('li', {}, h('b', {}, 'Eine Probeklausur schreiben.'), ' 25 gemischte Aufgaben in 45 Minuten. Am Ende bekommst du eine Note nach dem IHK-Schlüssel und alle Lösungen zum Nachlesen.'),
+    sec('So arbeitest du mit Lernstack', null,
+      h('ol', { class: 'steps' },
+        h('li', {}, h('b', {}, 'Einstufung.'), ' 30 Fragen aus allen Themen, etwa 15 Minuten. Danach siehst du pro Thema, was schon sitzt und wo Lücken sind.'),
+        h('li', {}, h('b', {}, 'Tagesrunde.'), ' Jeden Tag etwa zehn Minuten: neue Fragen und Wiederholungen. Richtig beantwortete Fragen kommen nach 1, 3, 7, 14 und 30 Tagen wieder, falsch beantwortete schon am nächsten Tag.'),
+        h('li', {}, h('b', {}, 'Probeklausur.'), ` ${S.exam.count} gemischte Aufgaben in ${S.exam.minutes} Minuten, benotet nach dem IHK-Schlüssel, mit allen Lösungen und Rechenwegen zum Nachlesen.`),
+      )),
+    sec('Inhalt', `${S.topics.length} Themen aus der Netzwerktechnik, jeweils mit Lernseite, Fragen und Übungen.`, tocList(S.topics, { note: t => `${t.questions.length} Fragen${t.gens.length ? ' und Rechenaufgaben' : ''}`, value: () => null })),
+    sec('Übungsformen', 'Neben den Fragen zu jedem Thema gibt es Übungen quer durch das Fach.', modeList()),
+  );
+  app.querySelectorAll('.landing ~ .sec .state').forEach(e => e.remove());
+}
+
+// ---------- Startseite mit Lernstand: was heute zu tun ist ----------
+function viewToday() {
+  const u = account.current();
+  const due = dueItems(S).length;
+  const answers = store.totalAnswers();
+  const today = store.activity(1)[0].count;
+  const plan = dailyItems(S);
+  const daily = `#/f/${S.id}/runde`;
+  let title, lead, buttons;
+  if (!answers && !store.getDiag(S.id)) {
+    title = 'Fang mit der Einstufung an.';
+    lead = '30 Fragen, drei aus jedem der zehn Themen, etwa 15 Minuten. Danach weißt du, wo du stehst, und Lernstack legt dir die Fragen ab morgen zur Wiederholung vor.';
+    buttons = [h('a', { class: 'btn btn-primary btn-lg', href: `#/f/${S.id}/diagnose` }, 'Einstufung starten'), h('a', { class: 'btn btn-lg', href: `#/f/${S.id}/t/${S.topics[0].id}` }, `Lieber mit Thema 1 beginnen`)];
+  } else if (due) {
+    title = due === 1 ? 'Heute steht eine Wiederholung an.' : `Heute stehen ${due} Wiederholungen an.`;
+    lead = `Die Tagesrunde hat ${plan.items.length} Aufgaben: ${plural(plan.due, 'fällige Frage', 'fällige Fragen')}${plan.fresh ? `, ${plural(plan.fresh, 'neue', 'neue')}` : ''} und ${plural(plan.calc, 'Rechenaufgabe', 'Rechenaufgaben')}. ${due > plan.due ? 'Der Rest folgt in der nächsten Runde.' : 'Danach ist für heute alles wiederholt.'}`;
+    buttons = [h('a', { class: 'btn btn-primary btn-lg', href: daily }, 'Tagesrunde starten')];
+  } else if (today) {
+    title = 'Für heute ist alles wiederholt.';
+    lead = plan.fresh ? 'Die nächsten Wiederholungen sind frühestens morgen fällig. Wenn du weitermachen willst, nimm neue Fragen dazu oder schreib eine Probeklausur.' : 'Du hast alle Fragen mindestens einmal gesehen. Die nächsten Wiederholungen sind frühestens morgen fällig. Eine Probeklausur zeigt dir, wo du insgesamt stehst.';
+    buttons = [plan.fresh ? h('a', { class: 'btn btn-primary btn-lg', href: daily }, 'Runde mit neuen Fragen') : null, h('a', { class: `btn btn-lg${plan.fresh ? '' : ' btn-primary'}`, href: `#/f/${S.id}/klausur` }, 'Probeklausur schreiben')];
+  } else {
+    title = 'Heute ist nichts zur Wiederholung fällig.';
+    lead = plan.fresh ? `Die Tagesrunde bringt dir ${plural(plan.fresh, 'neue Frage', 'neue Fragen')} und ${plural(plan.calc, 'Rechenaufgabe', 'Rechenaufgaben')}.` : 'Du hast alle Fragen mindestens einmal gesehen. Halte dich mit Rechenaufgaben oder einer Probeklausur in Übung.';
+    buttons = [h('a', { class: 'btn btn-primary btn-lg', href: plan.fresh ? daily : `#/f/${S.id}/klausur` }, plan.fresh ? 'Tagesrunde starten' : 'Probeklausur schreiben')];
+  }
+
+  // Empfehlungen: die schwächsten geübten Themen, dann das nächste noch nicht begonnene
+  const rated = S.topics.map(t => ({ t, m: store.mastery(tKey(S, t)), c: coverage(S, t) }));
+  const weak = rated.filter(x => x.m != null && x.m < 0.85).sort((a, b) => a.m - b.m).slice(0, 2)
+    .map(x => ({ t: x.t, text: `${Math.round(x.m * 100)} % deiner letzten Antworten waren richtig. Lies die Lernseite noch einmal und mach danach das Quiz.` }));
+  const fresh = rated.filter(x => !x.c.seen).slice(0, weak.length ? 1 : 2)
+    .map(x => ({ t: x.t, text: `Noch nicht begonnen. ${x.t.blurb}` }));
+  const nextUp = [...weak, ...fresh];
+
+  add(app,
+    !u && account.isAvailable() ? h('p', { class: 'note' }, 'Du lernst gerade ohne Konto, dein Stand liegt nur in diesem Browser. ', h('a', { href: '#/registrieren' }, 'Leg ein Konto an'), ', dann wird er übernommen und ist auf jedem Gerät verfügbar.') : null,
+    h('section', { class: 'today' },
+      h('div', { class: 'today-main' },
+        h('h1', {}, title),
+        h('p', { class: 'lead' }, lead),
+        h('div', { class: 'row' }, buttons),
+      ),
+      week(),
     ),
+    nextUp.length ? sec('Als Nächstes', 'Vorschläge aus deinem Lernstand.',
+      h('ul', { class: 'next' }, nextUp.map(({ t, text }) => h('li', {}, h('a', { href: `#/f/${S.id}/t/${t.id}` }, tab(t), h('span', {}, h('b', {}, t.title), h('span', {}, text))))))) : null,
+    sec('Stand je Thema', LEGEND, tocList(S.topics, { desc: false })),
+    sec('Übungsformen', 'Quer durch alle Themen.', modeList()),
   );
 }
 
 // ---------- Fachseite ----------
 function viewSubject(s) {
   const diag = store.getDiag(s.id);
-  add(app, 
+  add(app,
     h('div', { class: 'page-head' },
-      crumb('#/', 'Alle Fächer'),
       h('h1', {}, s.title),
-      h('p', { class: 'lead' }, 'Übe mit den Spielen quer durch das Fach oder wähle unten ein Thema, um die Lernseite zu lesen. Neben jedem Thema siehst du, wie sicher du darin schon bist.'),
+      h('p', { class: 'lead' }, 'Zehn Themen, die aufeinander aufbauen. Jedes hat eine Lernseite mit Beispielen und Rechenwegen, dazu Fragen, Zuordnungs- und Rechenaufgaben. Am Stand rechts siehst du, was sitzt.'),
     ),
-    h('section', { class: 'games', 'aria-labelledby': 'games-h' },
-      h('h2', { class: 'section', id: 'games-h' }, 'Üben und spielen'),
-      h('p', { class: 'muted games-lead' }, 'Diese Übungen mischen Aufgaben aus allen Themen des Fachs.'),
-      h('div', { class: 'bento' },
-        tile(`#/f/${s.id}/diagnose`, 'Einstufung', '30 Fragen aus allen Themen. Danach weißt du, welche Themen du noch üben solltest.', diag ? `Zuletzt ${diagAvg(diag)} % richtig` : 'Noch nicht gemacht', 'diag'),
-        tile(`#/f/${s.id}/klausur`, 'Probeklausur', `${s.exam.count} Aufgaben in ${s.exam.minutes} Minuten, ohne Hilfe zwischendurch. Am Ende gibt es eine Note nach IHK-Schlüssel.`, store.getBest(`exam:${s.id}`) ? `Bestes Ergebnis ${store.getBest(`exam:${s.id}`)} %` : 'Noch keine Klausur geschrieben', 'exam', true),
-        tile(`#/f/${s.id}/arcade`, 'Rechen-Arcade', 'Subnetting und Zahlensysteme auf Zeit. Bei Fehlern siehst du den Rechenweg.', arcadeBest() ? `Rekord ${arcadeBest()} Punkte` : 'Noch kein Rekord', 'arcade'),
-        tile(`#/f/${s.id}/reise`, 'Paketreise', 'Begleite ein Datenpaket durchs Netz und entscheide an jeder Station, was passiert.', 'Drei Strecken', 'reise'),
-        tile(`#/f/${s.id}/faelle`, 'Fehlersuche', 'Etwas funktioniert nicht. Du findest heraus, warum.', `${s.cases.length} Fälle aus der Praxis`, 'faelle'),
-      ),
-    ),
-    h('h2', { class: 'section' }, 'Themen'),
-    topicList(s.topics.map(t => ({ label: t.title, desc: t.blurb, value: store.mastery(tKey(s, t)), href: `#/f/${s.id}/t/${t.id}`, color: t.color }))),
-    diag ? h('p', { class: 'small muted' }, h('a', { href: `#/f/${s.id}/diagnose/ergebnis` }, 'Letztes Ergebnis der Einstufung ansehen')) : null,
-  );
-}
-function diagAvg(d) {
-  const v = Object.values(d.result || {}).filter(x => typeof x === 'number');
-  return v.length ? Math.round(v.reduce((a, b) => a + b, 0) / v.length * 100) : 0;
-}
-function arcadeBest() {
-  return Math.max(...['zahlen', 'subnet', 'sonst', 'mix'].map(k => store.getBest(`arcade:${k}`)));
-}
-const ART = {
-  diag: '<rect x="14" y="58" width="14" height="26" rx="2" class="a2"/><rect x="34" y="40" width="14" height="44" rx="2" class="a1"/><rect x="54" y="66" width="14" height="18" rx="2" class="a3"/><rect x="74" y="28" width="14" height="56" rx="2" class="a1"/><rect x="94" y="50" width="14" height="34" rx="2" class="a2"/><line x1="8" y1="88" x2="114" y2="88" class="ln"/>',
-  exam: '<rect x="20" y="10" width="64" height="82" rx="3" class="paper"/><line x1="30" y1="26" x2="70" y2="26" class="ln"/><line x1="30" y1="38" x2="74" y2="38" class="ln"/><line x1="30" y1="50" x2="64" y2="50" class="ln"/><line x1="30" y1="62" x2="72" y2="62" class="ln"/><circle cx="88" cy="70" r="20" class="a1"/><text x="88" y="78" class="big">1</text>',
-  arcade: '<text x="10" y="34" class="mono">1100 0000</text><text x="10" y="54" class="mono dim">1010 1000</text><text x="10" y="74" class="mono dim">/26  .192</text><circle cx="98" cy="66" r="16" class="ring"/><line x1="98" y1="66" x2="98" y2="55" class="hand"/><line x1="98" y1="66" x2="106" y2="70" class="hand"/><rect x="94" y="44" width="8" height="4" class="a1"/>',
-  reise: '<line x1="18" y1="60" x2="60" y2="30" class="ln"/><line x1="60" y1="30" x2="102" y2="60" class="ln"/><circle cx="18" cy="60" r="9" class="a2"/><circle cx="60" cy="30" r="9" class="a1"/><circle cx="102" cy="60" r="9" class="a3"/><rect x="32" y="40" width="18" height="12" rx="1.5" class="env"/><polyline points="32,40 41,47 50,40" class="envl"/>',
-  faelle: '<rect x="8" y="14" width="104" height="72" rx="4" class="term"/><text x="16" y="34" class="mono t">$ ping 10.0.0.1</text><text x="16" y="50" class="mono t err">keine Antwort</text><text x="16" y="66" class="mono t">$ ipconfig</text><rect x="16" y="72" width="7" height="9" class="a1"/>',
-};
-function tile(href, title, text, stat, art, wide = false) {
-  return h('a', { class: `tile tile-${art}${wide ? ' tile-wide' : ''}`, href },
-    h('div', { class: 'tile-art', 'aria-hidden': 'true', html: `<svg viewBox="0 0 120 96" focusable="false">${ART[art]}</svg>` }),
-    h('div', { class: 'tile-body' },
-      h('h3', {}, title),
-      h('p', {}, text),
-      h('p', { class: 'tile-stat' }, stat),
-    ),
+    sec('Themen', LEGEND, tocList(s.topics),
+      diag ? h('p', { class: 'small muted' }, h('a', { href: `#/f/${s.id}/diagnose/ergebnis` }, 'Letztes Ergebnis der Einstufung ansehen')) : null),
+    sec('Übungsformen', 'Diese Übungen mischen Aufgaben aus allen Themen.', modeList()),
   );
 }
 
 // ---------- Themenseite mit Lernseite ----------
+// Griffregister wie am Rand eines Tabellenbuchs: ein farbiger Reiter pro Thema
+function register(s, current) {
+  return h('nav', { class: 'reg', 'aria-label': 'Themen' }, s.topics.map(t => h('a', {
+    href: `#/f/${s.id}/t/${t.id}`, style: { '--c': t.color, '--on': inkOn(t.color) },
+    'aria-current': t === current ? 'page' : null, title: t.title,
+  }, h('b', {}, topicNo(t)), h('span', {}, t.title))));
+}
 function viewTopic(s, t) {
   const base = `#/f/${s.id}/t/${t.id}`;
+  const no = topicNo(t);
   const st = store.topicStats(tKey(s, t));
   const m = store.mastery(tKey(s, t));
-  const slug = x => x.toLowerCase().replace(/[^a-z0-9äöüß]+/g, '-');
+  const c = coverage(s, t);
+  const slug = x => 'a-' + x.toLowerCase().replace(/[^a-z0-9äöüß]+/g, '-');
+  const jump = id => e => { e.preventDefault(); document.getElementById(id)?.scrollIntoView({ behavior: 'smooth' }); };
   const actions = [
-    ['quiz', 'Quiz', `10 Fragen${t.gens.length ? ', davon einige zum Rechnen' : ''}`, true],
+    ['quiz', 'Quiz', `10 Fragen${t.gens.length ? ', einige davon zum Rechnen' : ''}. Fällige und neue Fragen kommen zuerst.`],
     t.pairs?.length && ['zuordnen', 'Zuordnen', 'Begriffe und Bedeutungen zusammenbringen'],
     t.order?.length && ['reihenfolge', 'Reihenfolge', 'Schritte in die richtige Reihenfolge bringen'],
-    t.gens.length && ['rechnen', 'Rechnen', 'Rechenaufgaben ohne Zeitdruck'],
+    t.gens.length && ['rechnen', 'Rechnen', 'Rechenaufgaben ohne Zeitdruck, mit Rechenweg'],
   ].filter(Boolean);
-  add(app, 
-    h('div', { class: 'topic-layout', style: { '--topic': t.color } },
-      h('div', { class: 'topic-head' },
-        crumb(`#/f/${s.id}`, s.title),
-        h('h1', {}, t.title),
+  const prev = s.topics[no - 2], next = s.topics[no];
+  add(app,
+    register(s, t),
+    h('div', { class: 'topic', style: { '--topic': t.color, '--on': inkOn(t.color) } },
+      h('header', { class: 'topic-head' },
+        crumb(`#/f/${s.id}`, 'Alle Themen'),
+        h('h1', {}, h('span', { class: 'chap' }, no), t.title),
         h('p', { class: 'lead' }, t.blurb),
       ),
       h('article', { class: 'learn' },
-        t.learn.map(sec => h('section', { id: slug(sec.h) }, h('h2', {}, sec.h), h('div', { class: 'prose', html: sec.html }))),
+        t.learn.map((part, i) => h('section', { id: slug(part.h) }, h('h2', {}, h('span', { class: 'sec-no' }, `${no}.${i + 1}`), part.h), h('div', { class: 'prose', html: part.html }))),
         h('div', { class: 'learn-end' },
-          h('p', {}, 'Fertig gelesen? Dann prüf, was hängen geblieben ist.'),
-          h('a', { class: 'btn btn-primary', href: `${base}/quiz` }, 'Quiz starten'),
+          h('p', {}, 'Lesen allein reicht nicht. Was du abrufen kannst, zeigt das Quiz.'),
+          h('a', { class: 'btn btn-primary', href: `${base}/quiz` }, 'Quiz zu diesem Thema starten'),
+        ),
+        h('nav', { class: 'pager', 'aria-label': 'Benachbarte Themen' },
+          prev ? h('a', { href: `#/f/${s.id}/t/${prev.id}` }, h('small', {}, `Thema ${no - 1}`), prev.title) : h('span'),
+          next ? h('a', { class: 'pager-next', href: `#/f/${s.id}/t/${next.id}` }, h('small', {}, `Thema ${no + 1}`), next.title) : null,
         ),
       ),
-      h('aside', { class: 'topic-aside' },
-        h('div', { class: 'aside-box' },
+      h('aside', { class: 'margin' },
+        h('div', { class: 'margin-box' },
           h('h2', {}, 'Üben'),
-          h('p', { class: 'small muted' }, st.total ? `Du hast ${st.total} Fragen zu diesem Thema beantwortet, zuletzt ${pct(m)}.` : 'Du hast dieses Thema noch nicht geübt.'),
-          h('ul', { class: 'action-list' }, actions.map(([id, title, text, primary]) => h('li', {},
-            h('a', { class: primary ? 'primary' : '', href: `${base}/${id}` }, h('b', {}, title), h('span', {}, text))))),
+          h('ul', { class: 'action-list' }, actions.map(([id, title, text], i) => h('li', {},
+            h('a', { class: i ? '' : 'primary', href: `${base}/${id}` }, h('b', {}, title), h('span', {}, text))))),
         ),
-        h('nav', { class: 'aside-box toc', 'aria-label': 'Inhalt der Lernseite' },
+        h('div', { class: 'margin-box' },
+          h('h2', {}, 'Dein Stand'),
+          meter(m),
+          h('p', { class: 'small' }, st.total
+            ? `${c.seen} von ${c.total} Fragen gesehen, ${c.solid} davon gefestigt.${c.due ? ` ${plural(c.due, 'Frage ist', 'Fragen sind')} heute zur Wiederholung fällig.` : ''}`
+            : `${c.total} Fragen warten auf dich.`),
+        ),
+        t.pruefung ? h('div', { class: 'margin-box' }, h('h2', {}, 'In der Prüfung'), h('p', { class: 'small' }, t.pruefung)) : null,
+        h('nav', { class: 'margin-box onpage', 'aria-label': 'Inhalt der Lernseite' },
           h('h2', {}, 'Auf dieser Seite'),
-          h('ul', {}, t.learn.map(sec => h('li', {}, h('a', { href: '#', onclick: e => { e.preventDefault(); document.getElementById(slug(sec.h))?.scrollIntoView({ behavior: 'smooth' }); } }, sec.h)))),
+          h('ol', {}, t.learn.map((part, i) => h('li', {}, h('a', { href: '#', onclick: jump(slug(part.h)) }, h('span', {}, `${no}.${i + 1}`), part.h)))),
         ),
       ),
     ),
   );
+}
+
+// ---------- Tagesrunde ----------
+function viewDaily(s) {
+  const plan = dailyItems(s);
+  runItems(app, plan.items, {
+    title: 'Tagesrunde', showTopic: true, backHref: '#/', again: () => route(),
+    intro: plan.due ? `${plural(plan.due, 'Wiederholung', 'Wiederholungen')}${plan.fresh ? `, ${plural(plan.fresh, 'neue Frage', 'neue Fragen')}` : ''} und ${plural(plan.calc, 'Rechenaufgabe', 'Rechenaufgaben')}, gemischt aus allen Themen.`
+      : `${plan.fresh ? `${plural(plan.fresh, 'neue Frage', 'neue Fragen')} und ` : ''}${plural(plan.calc, 'Rechenaufgabe', 'Rechenaufgaben')}. Heute ist nichts zur Wiederholung fällig.`,
+  });
 }
 
 // ---------- Einstufung ----------
 function viewDiagnose(s) {
   const items = diagItems(s).sort(() => Math.random() - 0.5);
   runItems(app, items, {
-    title: `Einstufung ${s.title}`, xp: 8,
-    intro: 'Beantworte die Fragen so gut du kannst. Raten ist erlaubt, aber ehrlich bleiben hilft dir mehr. Nur zwei der 30 Aufgaben sind Rechenaufgaben.',
+    title: 'Einstufung', xp: 8,
+    intro: 'Beantworte die Fragen so gut du kannst. Wenn du etwas nicht weißt, rate nicht lange, sondern nimm die Antwort, die dir am plausibelsten erscheint. Nur zwei der 30 Aufgaben sind Rechenaufgaben.',
     onFinish(results, el) {
       const res = {};
       s.topics.forEach(t => {
@@ -212,36 +331,39 @@ function diagResult(el, s, res, results) {
   clear(el);
   const weak = s.topics.filter(t => res[t.id] != null && res[t.id] < 0.85).sort((a, b) => res[a.id] - res[b.id]).slice(0, 3);
   const total = results ? Math.round(results.filter(r => r.ok).length / results.length * 100) : null;
-  add(el, 
+  add(el,
     h('div', { class: 'page-head' },
-      crumb(`#/f/${s.id}`, s.title),
-      h('h1', {}, 'Dein Ergebnis'),
-      total != null ? h('p', { class: 'lead' }, `Du hast ${total} % der Fragen richtig beantwortet. Darunter siehst du, wie es in den einzelnen Themen aussieht.`) : null,
+      crumb(`#/f/${s.id}`, 'Alle Themen'),
+      h('h1', {}, 'Ergebnis der Einstufung'),
+      total != null ? h('p', { class: 'lead' }, `${total} % der Fragen waren richtig. Die Fragen aus der Einstufung kommen in den nächsten Tagesrunden wieder: die falsch beantworteten morgen, die richtigen später.`) : null,
     ),
-    topicList(s.topics.map(t => ({ label: t.title, value: res[t.id], note: res[t.id] == null ? null : `${Math.round(res[t.id] * 3)} von 3 Fragen richtig`, href: `#/f/${s.id}/t/${t.id}`, color: t.color })), { label: 'Ergebnis der Einstufung', legend: false }),
-    weak.length ? [
-      h('h2', { class: 'section' }, 'Damit solltest du anfangen'),
-      h('ol', { class: 'steps' }, weak.map(t => h('li', {}, h('a', { href: `#/f/${s.id}/t/${t.id}` }, h('b', {}, t.title)), ` Hier waren ${Math.round(res[t.id] * 100)} % deiner Antworten richtig. Lies die Lernseite und mach danach das Quiz.`))),
-    ] : h('p', { class: 'callout' }, 'Alle Themen liegen bei 85 % oder mehr. Probier als Nächstes die Probeklausur.'),
+    sec('Je Thema', 'Drei Fragen pro Thema sind eine grobe Orientierung, keine Note.',
+      tocList(s.topics, { desc: false, value: t => res[t.id], note: t => res[t.id] == null ? null : `${Math.round(res[t.id] * 3)} von 3 Fragen richtig` })),
+    weak.length
+      ? sec('Damit solltest du anfangen', null, h('ul', { class: 'next' }, weak.map(t => h('li', {}, h('a', { href: `#/f/${s.id}/t/${t.id}` }, tab(t), h('span', {}, h('b', {}, t.title), h('span', {}, `${Math.round(res[t.id] * 3)} von 3 Fragen richtig. Lies die Lernseite und mach danach das Quiz.`)))))))
+      : h('p', { class: 'callout' }, 'Alle Themen liegen bei 85 % oder mehr. Probier als Nächstes die Probeklausur.'),
     results ? reviewList(results.filter(r => !r.ok)) : null,
+    h('div', { class: 'row end-actions' }, h('a', { class: 'btn btn-primary', href: '#/' }, 'Zur Übersicht')),
   );
 }
 
 // ---------- Probeklausur ----------
 function viewExam(s) {
   clear(app);
-  add(app, h('div', { class: 'page-head narrow' },
-    crumb(`#/f/${s.id}`, s.title),
+  add(app, h('div', { class: 'page-head' },
+    crumb(`#/f/${s.id}`, 'Alle Themen'),
     h('h1', {}, 'Probeklausur'),
-    h('p', { class: 'lead' }, `Du bekommst ${s.exam.count} Aufgaben aus allen Themen und hast ${s.exam.minutes} Minuten Zeit. Während der Klausur siehst du nicht, ob deine Antworten stimmen. Erst am Ende gibt es die Auswertung mit Note und allen Lösungen.`),
-    h('h2', { class: 'section' }, 'Gut zu wissen'),
+    h('p', { class: 'lead' }, `${s.exam.count} Aufgaben aus allen Themen, ${s.exam.minutes} Minuten Bearbeitungszeit. Während der Klausur erfährst du nicht, ob eine Antwort stimmt. Die Auswertung mit Note und allen Lösungen gibt es am Ende.`),
+  ),
+  sec('Hinweise zur Bearbeitung', null,
     h('ul', { class: 'prose-list' },
-      h('li', {}, 'Bei Rechenaufgaben trägst du nur das Ergebnis ein. IP-Adressen schreibst du mit Punkten, Kommazahlen mit Komma.'),
-      h('li', {}, 'Wenn mehrere Antworten richtig sind, gibt es den Punkt nur, wenn du alle richtigen und keine falsche auswählst.'),
-      h('li', {}, 'Die Note richtet sich nach dem IHK-Schlüssel: ab 92 % eine 1, ab 81 % eine 2, ab 67 % eine 3, ab 50 % eine 4 und ab 30 % eine 5.'),
+      h('li', {}, 'Bei Rechenaufgaben trägst du nur das Ergebnis ein. IP-Adressen schreibst du in Dezimalpunktschreibweise, Kommazahlen mit Komma.'),
+      h('li', {}, 'Bei Mehrfachauswahl gibt es den Punkt nur, wenn du alle richtigen und keine falsche Antwort markierst.'),
+      h('li', {}, 'Benotet wird nach dem IHK-Schlüssel: ab 92 % sehr gut, ab 81 % gut, ab 67 % befriedigend, ab 50 % ausreichend, ab 30 % mangelhaft.'),
+      h('li', {}, 'Auch die Antworten aus der Klausur fließen in deine Wiederholungen ein.'),
     ),
-    h('button', { class: 'btn btn-primary btn-lg', onclick: startExam }, 'Probeklausur starten'),
-  ));
+    h('button', { class: 'btn btn-primary btn-lg', onclick: startExam }, 'Probeklausur starten')),
+  );
   function startExam() {
     const items = examItems(s, s.exam.count);
     runItems(app, items, {
@@ -252,15 +374,13 @@ function viewExam(s) {
         const p = Math.round(ok / items.length * 100);
         const [g, gt] = grade(p);
         store.setBest(`exam:${s.id}`, p);
-        if (g <= 2) confetti(90);
         const open = items.length - results.length;
         add(el, h('div', { class: 'end' },
-          h('div', { class: `grade grade-${g}` }, h('span', {}, 'Note'), h('b', {}, g)),
-          h('h2', {}, gt[0].toUpperCase() + gt.slice(1) + '.'),
-          h('p', { class: 'muted' }, `${ok} von ${items.length} Punkten, das sind ${p} %. Du hast ${Math.max(1, Math.round(meta.seconds / 60))} Minuten gebraucht.${open ? ` ${open} Aufgaben hast du nicht mehr geschafft.` : ''}`),
-          h('div', { class: 'row center' },
+          h('div', { class: `grade grade-${g}` }, h('span', {}, 'Note'), h('b', {}, g), h('span', {}, gt)),
+          h('p', { class: 'end-score' }, h('b', {}, `${ok} von ${items.length}`), ' Punkten, das sind ', h('b', {}, `${p} %`), `. Bearbeitungszeit: ${plural(Math.max(1, Math.round(meta.seconds / 60)), 'Minute', 'Minuten')}.${open ? ` ${plural(open, 'Aufgabe', 'Aufgaben')} hast du nicht mehr geschafft.` : ''}`),
+          h('div', { class: 'row' },
             h('button', { class: 'btn btn-primary', onclick: startExam }, 'Neue Probeklausur'),
-            h('a', { class: 'btn', href: `#/f/${s.id}` }, 'Zurück zum Fach')),
+            h('a', { class: 'btn', href: '#/' }, 'Zur Übersicht')),
           reviewList([...results.filter(r => !r.ok), ...results.filter(r => r.ok)]),
         ));
       },
@@ -271,27 +391,30 @@ function viewExam(s) {
 // ---------- Fortschritt ----------
 function viewProfile() {
   const L = store.levelInfo();
-  add(app, 
+  const u = account.current();
+  const solid = S.topics.reduce((a, t) => a + coverage(S, t).solid, 0);
+  const total = S.topics.reduce((a, t) => a + t.questions.length, 0);
+  const seen = S.topics.reduce((a, t) => a + coverage(S, t).seen, 0);
+  add(app,
     h('div', { class: 'page-head' },
-      crumb('#/', 'Startseite'),
       h('h1', {}, 'Dein Fortschritt'),
-      h('p', { class: 'lead' }, `Du bist auf Stufe ${L.level} („${L.title}“) und hast ${store.get().xp} Punkte. Bis zur nächsten Stufe fehlen dir noch ${L.toNext} Punkte.`),
-      h('p', { class: 'small muted' }, 'Dein Fortschritt wird nur in diesem Browser gespeichert. Es gibt kein Konto und keinen Server, der deine Antworten kennt. Wenn du an einem anderen Rechner weitermachen willst, exportiere deinen Stand hier und importiere ihn dort.'),
+      h('p', { class: 'lead' }, `Du hast ${seen} von ${total} Fragen gesehen, ${solid} davon sind gefestigt. Eine Frage gilt als gefestigt, wenn du sie an drei verschiedenen Terminen hintereinander richtig beantwortet hast.`),
     ),
-    subjects.filter(s => s.status === 'aktiv').map(s => [
-      h('h2', { class: 'section' }, s.title),
-      topicList(s.topics.map(t => {
-        const st = store.topicStats(tKey(s, t));
-        return { label: t.title, value: store.mastery(tKey(s, t)), note: st.total ? `${st.total} Antworten insgesamt` : null, href: `#/f/${s.id}/t/${t.id}`, color: t.color };
-      })),
-      h('p', { class: 'small muted' }, `Deine Rekorde in der Rechen-Arcade: Zahlensysteme ${store.getBest('arcade:zahlen')}, Subnetting ${store.getBest('arcade:subnet')}, weitere Rechnungen ${store.getBest('arcade:sonst')}, gemischt ${store.getBest('arcade:mix')} Punkte.`),
-    ]),
-    h('h2', { class: 'section' }, 'Deine Daten'),
-    h('div', { class: 'row' },
-      h('button', { class: 'btn', onclick: async () => { const d = store.exportData(); try { await navigator.clipboard.writeText(d); toast('Dein Stand ist in der Zwischenablage. Füge ihn am anderen Rechner unter Importieren ein.'); } catch { prompt('Diesen Text kopieren:', d); } } }, 'Stand exportieren'),
-      h('button', { class: 'btn', onclick: () => { const d = prompt('Füge hier deinen exportierten Stand ein:'); if (d) { try { store.importData(d); toast('Dein Stand wurde übernommen.'); route(); } catch { toast('Das hat nicht geklappt. Der eingefügte Text ist kein gültiger Stand.', 'warn'); } } } }, 'Stand importieren'),
-      h('button', { class: 'btn btn-quiet-bad', onclick: () => { if (confirm('Willst du deinen gesamten Fortschritt löschen? Das lässt sich nicht rückgängig machen.')) { store.reset(); route(); } } }, 'Fortschritt löschen'),
-    ),
+    sec('Lerntage', 'Die letzten 14 Tage. Die Zahl im Kästchen ist die Anzahl deiner Antworten.', week(),
+      h('p', { class: 'small muted' }, `Stufe ${L.level} („${L.title}“) mit ${store.get().xp} Punkten. Bis zur nächsten Stufe fehlen ${L.toNext} Punkte.`)),
+    sec('Stand je Thema', LEGEND, tocList(S.topics, { desc: false, note: t => { const st = store.topicStats(tKey(S, t)); return st.total ? `${topicNote(t)}, ${plural(st.total, 'Antwort', 'Antworten')} insgesamt` : topicNote(t); } })),
+    sec('Bestwerte', null, h('table', { class: 'tbl tbl-narrow' },
+      h('tbody', {},
+        h('tr', {}, h('th', {}, 'Probeklausur'), h('td', {}, store.getBest(`exam:${S.id}`) ? `${store.getBest(`exam:${S.id}`)} %` : 'noch nicht geschrieben')),
+        [['zahlen', 'Rechentraining Zahlensysteme'], ['subnet', 'Rechentraining Subnetting'], ['sonst', 'Rechentraining weitere Rechnungen'], ['mix', 'Rechentraining gemischt']]
+          .map(([k, label]) => h('tr', {}, h('th', {}, label), h('td', {}, store.getBest(`arcade:${k}`) ? `${store.getBest(`arcade:${k}`)} Punkte` : 'noch kein Sprint')))))),
+    sec('Deine Daten', u ? `Dein Lernstand ist im Konto „${u.name}“ gespeichert.` : 'Ohne Konto liegt dein Lernstand nur in diesem Browser.',
+      !u && account.isAvailable() ? h('p', {}, h('a', { href: '#/registrieren' }, 'Konto anlegen'), ' und den Stand aus diesem Browser mitnehmen.') : null,
+      h('div', { class: 'row' },
+        !u ? h('button', { class: 'btn', onclick: async () => { const d = store.exportData(); try { await navigator.clipboard.writeText(d); toast('Dein Stand ist in der Zwischenablage.'); } catch { dialog({ title: 'Stand kopieren', fields: [{ name: 'd', label: 'Diesen Text kopieren', rows: 6, value: d, maxlength: 1e6 }], submit: 'Schließen', cancel: null }); } } }, 'Stand exportieren') : null,
+        !u ? h('button', { class: 'btn', onclick: () => dialog({ title: 'Stand importieren', text: 'Füge den exportierten Text ein. Dein jetziger Stand in diesem Browser wird ersetzt.', fields: [{ name: 'd', label: 'Exportierter Stand', rows: 6, maxlength: 1e6 }], submit: 'Importieren', onSubmit({ d }) { try { store.importData(d); } catch { throw new Error('Der eingefügte Text ist kein gültiger Stand.'); } toast('Stand übernommen.'); route(); } }) }, 'Stand importieren') : null,
+        h('button', { class: 'btn btn-danger-quiet', onclick: () => dialog({ title: 'Gesamten Fortschritt löschen?', text: 'Punkte, Stand je Thema, Wiederholungen und Bestwerte werden gelöscht. Das lässt sich nicht rückgängig machen.', submit: 'Fortschritt löschen', danger: true, async onSubmit() { if (u) await store.resetRemote(); else store.reset(); toast('Fortschritt gelöscht.'); route(); } }) }, 'Fortschritt löschen'),
+      )),
   );
 }
 
@@ -302,20 +425,29 @@ function route() {
   window.scrollTo(0, 0);
   const parts = location.hash.replace(/^#\/?/, '').split('/').filter(Boolean);
   document.body.dataset.view = parts[0] || 'home';
-  if (!parts.length) return viewHome();
+  drawChrome();
+  const u = account.current();
+  const done = () => { location.hash = '#/'; };
+  if (u?.mustChange) return viewForcedPassword(app, { done: route });
+  if (parts[0] === 'anmelden') return u ? done() : viewLogin(app);
+  if (parts[0] === 'registrieren') return u ? done() : viewRegister(app);
+  if (parts[0] === 'konto') return u ? viewAccount(app) : viewLogin(app);
+  if (parts[0] === 'verwaltung') return account.isAdmin() ? viewAdmin(app, S) : u ? notFound() : viewLogin(app);
+  if (!parts.length) return (u || store.totalAnswers() || store.getDiag(S.id)) ? viewToday() : viewLanding();
   if (parts[0] === 'profil') return viewProfile();
   if (parts[0] !== 'f') return notFound();
   const s = byId[parts[1]];
   if (!s || s.status !== 'aktiv') return notFound();
   const sub = parts[2];
   if (!sub) return viewSubject(s);
+  if (sub === 'runde') return viewDaily(s);
   if (sub === 'diagnose') {
     if (parts[3] === 'ergebnis' && store.getDiag(s.id)) return diagResult(app, s, store.getDiag(s.id).result);
     return viewDiagnose(s);
   }
   if (sub === 'klausur') return viewExam(s);
   if (sub === 'arcade') return arcadeMenu(app, s);
-  if (sub === 'faelle') return runItems(app, caseItems(s).sort(() => Math.random() - 0.5), { title: 'Fehlersuche', xp: 15, backHref: `#/f/${s.id}`, again: () => route(), intro: 'Jeder Fall beschreibt ein Problem aus dem Alltag. Lies die Beschreibung und die Ausgabe genau und entscheide, woran es liegt.' });
+  if (sub === 'faelle') return runItems(app, caseItems(s).sort(() => Math.random() - 0.5), { title: 'Fehlersuche', xp: 15, backHref: `#/f/${s.id}`, again: () => route(), intro: 'Jeder Fall beschreibt eine Störung, wie sie im Support ankommt. Lies die Beschreibung und die Befehlsausgabe genau und grenze die Ursache ein.' });
   if (sub === 'reise') {
     const j = s.journeys.find(x => x.id === parts[3]);
     return j ? playJourney(app, s, j) : journeyMenu(app, s);
@@ -344,7 +476,7 @@ const tbtn = document.getElementById('theme-toggle');
 function syncTheme() {
   const dark = document.documentElement.dataset.theme === 'dark';
   tbtn.setAttribute('aria-pressed', String(dark));
-  tbtn.querySelector('.tt-label').textContent = dark ? 'Hell' : 'Dunkel';
+  tbtn.setAttribute('aria-label', dark ? 'Zum hellen Modus wechseln' : 'Zum dunklen Modus wechseln');
   tbtn.title = dark ? 'Zum hellen Modus wechseln' : 'Zum dunklen Modus wechseln';
 }
 tbtn.addEventListener('click', () => {
@@ -355,6 +487,9 @@ tbtn.addEventListener('click', () => {
 });
 syncTheme();
 
+// Erst klären, ob jemand angemeldet ist, dann die erste Seite zeichnen.
+// Antwortet der Server nicht rechtzeitig, läuft die Seite ohne Konto weiter.
+await Promise.race([account.init(), new Promise(r => setTimeout(r, 4000))]);
+account.onChange(() => route());
 window.addEventListener('hashchange', route);
-drawHud();
 route();

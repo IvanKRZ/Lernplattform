@@ -3,6 +3,7 @@
 export const routing = {
   id: 'routing', title: 'Routing', color: '#E07020',
   blurb: 'Wie Router den Weg für ein Paket finden: Routing-Tabelle, statische und dynamische Routen.',
+  pruefung: 'Routing-Tabellen lesen und ergänzen ist eine Standardaufgabe in Teil 2: nächsten Hop bestimmen, statische Route eintragen, Standardroute erklären. Statisches und dynamisches Routing solltest du gegenüberstellen können.',
   gens: ['samenet'],
   learn: [
     {
@@ -106,6 +107,7 @@ export const routing = {
 export const natpat = {
   id: 'natpat', title: 'NAT und PAT', color: '#8A5A3C',
   blurb: 'Wie viele Geräte mit privaten Adressen über eine öffentliche IP-Adresse ins Internet kommen.',
+  pruefung: 'Private Adressbereiche nach RFC 1918 und das Prinzip von NAT und PAT werden in beiden Prüfungsteilen gefragt, häufig anhand einer Übersetzungstabelle, die du ausfüllst.',
   gens: ['pat', 'private'],
   learn: [
     {
@@ -130,8 +132,8 @@ export const natpat = {
       <p>Bei <b>PAT</b> (Port Address Translation, auch NAT-Overload) teilen sich viele Geräte eine einzige öffentliche Adresse. Der Router unterscheidet die Verbindungen anhand der <b>Portnummer</b>. So arbeiten fast alle Router zu Hause.</p>`,
     },
     {
-      h: 'Die PAT-Regeln aus dem Unterricht',
-      html: `<p>Wenn ein Router per PAT eine Verbindung übersetzt, wählt er den Quellport so:</p>
+      h: 'Wie PAT den Port wählt (Cisco IOS)',
+      html: `<p>Wenn ein Cisco-Router per PAT eine Verbindung übersetzt, wählt er den Quellport nach festen Regeln. Andere Hersteller gehen ähnlich vor, die Portgruppen können aber abweichen.</p>
       <ol><li>Der ursprüngliche Quellport bleibt nach Möglichkeit erhalten. Es ändert sich nur die IP-Adresse.</li>
       <li>Ist der Port schon belegt, nimmt der Router den ersten freien Port aus derselben Portgruppe, von unten gezählt. Die Gruppen sind <b>0–511</b>, <b>512–1023</b> und <b>1024–65535</b>.</li>
       <li>Ist in der Gruppe kein Port mehr frei, nimmt der Router die nächste IP-Adresse aus dem NAT-Pool und wendet dort dieselben Regeln an.</li></ol>
@@ -141,7 +143,7 @@ export const natpat = {
     {
       h: 'S-NAT, Masquerading und Portweiterleitung',
       html: `<p>Beim <b>Masquerading</b> (auch S-NAT) setzt der Router als Quelladresse seine eigene öffentliche IP-Adresse ein. Falls nötig, vergibt er eine neue Portnummer. In einer Tabelle merkt er sich, welche interne Adresse und welcher Port zu welchem externen Port gehören.</p>
-      <div class="rechnung"><p>Beispiel aus dem Unterricht: PC1 192.168.0.1:5000 ruft den Server 170.0.0.1:80 auf. Der Router hat außen 205.0.0.2.</p><p>Im Internet sieht das Paket so aus: Quelle 205.0.0.2:6001, Ziel 170.0.0.1:80.<br>Der Router merkt sich: 192.168.0.1:5000 gehört zu Port 6001.</p><p>Die Antwort des Servers geht an 205.0.0.2:6001. Der Router schaut in seine Tabelle und schickt sie an 192.168.0.1:5000 weiter.</p></div>
+      <div class="rechnung"><p>Beispiel: PC1 192.168.0.1:5000 ruft den Server 170.0.0.1:80 auf. Der Router hat außen 205.0.0.2.</p><p>Im Internet sieht das Paket so aus: Quelle 205.0.0.2:6001, Ziel 170.0.0.1:80.<br>Der Router merkt sich: 192.168.0.1:5000 gehört zu Port 6001.</p><p>Die Antwort des Servers geht an 205.0.0.2:6001. Der Router schaut in seine Tabelle und schickt sie an 192.168.0.1:5000 weiter.</p></div>
       <p>NAT und PAT funktionieren nur für Verbindungen, die von innen aufgebaut werden. Soll ein interner Server von außen erreichbar sein, braucht man eine <b>Portweiterleitung</b> (D-NAT). Dabei leitet der Router zum Beispiel alles, was auf seinem Port 443 ankommt, an 192.168.1.20:443 weiter.</p>`,
     },
   ],
@@ -154,7 +156,7 @@ export const natpat = {
     { id: 'n6', type: 'mc', q: 'Woran unterscheidet PAT mehrere interne Geräte hinter einer öffentlichen Adresse?', options: ['An der Portnummer', 'An der MAC-Adresse', 'An der VLAN-ID', 'An der TTL'], answer: 0, explain: 'Jede Verbindung bekommt eine eindeutige Kombination aus öffentlicher Adresse und Port.' },
     { id: 'n7', type: 'mc', q: 'Ein PC sendet mit Quellport 5000. Auf der öffentlichen Adresse ist dieser Port noch frei. Welchen Port verwendet der Router bei PAT?', options: ['5000', '1024', '6001', '0'], answer: 0, explain: 'Nach der ersten PAT-Regel bleibt der Quellport erhalten, wenn er frei ist. Es ändert sich nur die IP-Adresse.' },
     { id: 'n8', type: 'mc', q: 'Port 80 ist belegt, die Ports 0 und 1 auch. Welchen Port vergibt der Router bei PAT?', options: ['2', '81', '1024', '512'], answer: 0, explain: 'Port 80 gehört zur Gruppe 0 bis 511. Der erste freie Port dieser Gruppe von unten ist 2.' },
-    { id: 'n9', type: 'mc', q: 'Welche Portgruppen nennen die PAT-Regeln aus dem Unterricht?', options: ['0–511, 512–1023, 1024–65535', '0–1023, 1024–49151, 49152–65535', '0–255, 256–65535', '1–1024, 1025–65535'], answer: 0, explain: 'So steht es in den Unterlagen. Die zweite Antwort sind die Portbereiche der IANA, die sind etwas anderes.' },
+    { id: 'n9', type: 'mc', q: 'In welche Portgruppen teilt Cisco IOS die Ports bei PAT ein?', options: ['0–511, 512–1023, 1024–65535', '0–1023, 1024–49151, 49152–65535', '0–255, 256–65535', '1–1024, 1025–65535'], answer: 0, explain: 'Cisco IOS sucht einen freien Port innerhalb der Gruppen 0–511, 512–1023 und 1024–65535. Die zweite Antwort nennt die Portbereiche der IANA (Well-known, Registered, Dynamic), die sind etwas anderes.' },
     { id: 'n10', type: 'mc', q: 'Was passiert nach den PAT-Regeln, wenn in einer Portgruppe <b>kein Port mehr frei</b> ist?', options: ['Der Router nimmt die nächste IP-Adresse aus dem NAT-Pool', 'Das Paket wird verworfen', 'Der Router nimmt einen Port aus einer anderen Gruppe', 'Der PC bekommt eine neue private Adresse'], answer: 0, explain: 'Dann wird die nächste öffentliche Adresse aus dem Pool genommen, und dort gelten wieder dieselben Regeln.' },
     { id: 'n11', type: 'mc', q: 'Was macht der Router mit der <b>Antwort</b> eines Webservers auf eine PAT-Verbindung?', options: ['Er ersetzt Ziel-IP und Ziel-Port anhand seiner NAT-Tabelle durch die internen Werte', 'Er schickt sie an alle internen Geräte', 'Er verwirft sie', 'Er ändert nur die MAC-Adresse'], answer: 0, explain: 'Der Router hat sich gemerkt, welcher externe Port zu welcher internen Adresse gehört, und übersetzt zurück.' },
     { id: 'n12', type: 'mc', q: 'PC1 (192.168.0.1:5000) ruft 170.0.0.1:80 auf. Der Router hat außen 205.0.0.2 und vergibt den Port 6001. Wie lautet die <b>Quelle</b> des Pakets im Internet?', options: ['205.0.0.2:6001', '192.168.0.1:5000', '192.168.0.254:6001', '170.0.0.1:80'], answer: 0, explain: 'Der Router setzt seine öffentliche Adresse und den neuen Port ein. Er merkt sich, dass 6001 zu 192.168.0.1:5000 gehört.' },
@@ -170,6 +172,7 @@ export const natpat = {
 export const vpn = {
   id: 'vpn', title: 'VPN', color: '#1A9AA0',
   blurb: 'Verschlüsselte Verbindungen über das Internet: Arten, Protokolle und die beiden Betriebsmodi von IPsec.',
+  pruefung: 'VPN-Arten und IPsec gehören zu Teil 2, oft verbunden mit einem Szenario wie Homeoffice oder Standortkopplung. Du solltest Site-to-Site und End-to-Site sowie Tunnel- und Transportmodus unterscheiden können.',
   gens: [],
   learn: [
     {

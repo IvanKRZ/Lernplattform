@@ -6,3 +6,6 @@ desktop.ini
 .idea/
 # Logs auf dem Server
 *.log
+# Datenbank mit Konten und Lernständen, Startpasswort der Verwaltung
+data/
+.env

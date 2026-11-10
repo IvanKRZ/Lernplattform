@@ -1,5 +1,5 @@
-// Rechen-Arcade: Sprint auf Zeit mit Combo und steigendem Level
-import { h, add, clear, toast, confetti, fmtTime, pick } from '../ui.js';
+// Rechentraining: Sprint auf Zeit mit Combo und steigendem Level
+import { h, add, clear, toast, fmtTime, pick } from '../ui.js';
 import { generators, groups } from '../gen/netz.js';
 import * as store from '../store.js';
 
@@ -12,7 +12,7 @@ export function arcadeMenu(el, subject) {
   add(el, 
     h('div', { class: 'page-head' },
       h('a', { class: 'crumb', href: `#/f/${subject.id}` }, subject.title),
-      h('h1', {}, 'Rechen-Arcade'),
+      h('h1', {}, 'Rechentraining'),
       h('p', { class: 'lead' }, 'Im Sprint hast du 2 Minuten. Jede richtige Antwort bringt Punkte, und wer mehrmals hintereinander richtig liegt, bekommt mehr. Nach drei richtigen Antworten werden die Aufgaben schwerer. Bei einem Fehler hält die Uhr an, und du siehst den Rechenweg. Im Training gibt es keine Uhr.'),
     ),
     h('div', { class: 'grid3' }, modes.map(m => h('div', { class: 'card arcade-card' },
@@ -143,7 +143,6 @@ export function playArcade(el, subject, mode, { sprint = true } = {}) {
     if (xp) store.addXP(xp);
     const key = `arcade:${mode.id}`;
     const record = sprint && !aborted && store.setBest(key, score);
-    if (record) confetti(80);
     clear(stage);
     add(stage, h('div', { class: 'end' },
       h('div', { class: 'big-score' }, score),
