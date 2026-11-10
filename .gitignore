@@ -1,0 +1,8 @@
+# Betriebssystem und Editor
+.DS_Store
+Thumbs.db
+desktop.ini
+.vscode/
+.idea/
+# Logs auf dem Server
+*.log
