@@ -119,8 +119,8 @@ export function renderItem(item, { exam = false, onAnswer, onNext, label } = {})
   if (item.type === 'tf') {
     const list = h('div', { class: 'options tf' });
     [[true, 'Wahr'], [false, 'Falsch']].forEach(([v, t], n) => {
-      add(list, h('button', { class: 'opt', 'data-v': v, onclick: (e) => finish(v === item.answer, t, () => list.querySelectorAll('.opt').forEach(x => {
-        if ((x.dataset.v === 'true') === item.answer) x.classList.add('right'); else x.classList.add('wrong');
+      add(list, h('button', { class: 'opt', 'data-v': String(v), onclick: (e) => finish(v === item.answer, t, () => list.querySelectorAll('.opt').forEach(x => {
+        if ((x.dataset.v === 'true') === item.answer) x.classList.add('right'); else if (x.dataset.v === String(v)) x.classList.add('wrong');
       })) }, h('kbd', {}, n + 1), t));
     });
     add(body, list);
