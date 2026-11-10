@@ -52,8 +52,8 @@ site/
   js/store.js          Fortschritt im localStorage
   js/ui.js             DOM-Helfer, Toasts, Konfetti
   js/gen/netz.js       Aufgaben-Generatoren (Subnetting, Zahlensysteme, PAT, LWL …)
-  js/engines/          item (Fragetypen), runner (Quiz/Klausur), games (Zuordnen, Reihenfolge,
-                       Karteikarten), arcade, journey (Paketreise), pool (Aufgaben mischen)
+  js/engines/          item (Fragetypen), runner (Quiz/Klausur), games (Zuordnen, Reihenfolge),
+                       arcade, journey (Paketreise), pool (Aufgaben mischen)
   content/subjects.js  Fächer-Registry
   content/<fach>/      Inhalte je Fach
 ```
@@ -65,9 +65,9 @@ site/
    - `color`: Themenfarbe (Kabelfarben aus DESIGN.md), `blurb`: ein Satz, worum es geht
    - `learn`: Abschnitte der Lernseite `{ h, html }` in ganzen Sätzen. Bausteine: `<div class="merke">` für das Wichtigste, `<div class="rechnung">` für Rechenwege auf Karopapier, normale Tabellen
    - `questions`: `mc` (eine richtige, `answer` = Index), `multi` (`answer` = Index-Array), `tf` (`answer` = true/false), `input` (`accept` = Liste gültiger Eingaben)
-   - `pairs`: Zuordnen-Sets, `order`: Reihenfolgen, `cards`: Karteikarten
+   - `pairs`: Zuordnen-Sets, `order`: Reihenfolgen
    - `gens`: IDs von Generatoren aus `js/gen/` (optional)
-3. In `content/subjects.js` importieren und den Platzhalter ersetzen. `journeys` und `cases` sind optional.
+3. In `content/subjects.js` importieren und den Platzhalter ersetzen. `journeys` (Knoten mit `mac: [[Bezeichnung, MAC]]` für die MAC-Anzeige) und `cases` sind optional.
 
 Jede Frage hat eine eindeutige `id`. Über „Fehler melden“ kopieren Nutzer eine Referenz wie `netzwerktechnik/subnetting/s6`, mit der sich die Frage direkt finden lässt.
 

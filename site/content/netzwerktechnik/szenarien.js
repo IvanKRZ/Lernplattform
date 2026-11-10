@@ -8,10 +8,10 @@ export const journeys = [
     id: 'internet', title: 'Ab ins Internet', topics: ['switch', 'vlan', 'routing', 'natpat'],
     desc: 'PC1 ruft eine Website auf. Du begleitest das Paket über Switch, Trunk und Router bis ins Internet und wieder zurück.',
     nodes: [
-      { id: 'pc1', label: 'PC1', sub: '192.168.10.10/24 · VLAN 10', x: 60, y: 170, kind: 'pc' },
+      { id: 'pc1', label: 'PC1', sub: '192.168.10.10/24 · VLAN 10', mac: [['', MAC.pc1]], x: 60, y: 170, kind: 'pc' },
       { id: 'sw1', label: 'SW1', sub: 'Port 3: VLAN 10 · Port 24: Trunk', x: 250, y: 170, kind: 'switch' },
-      { id: 'r1', label: 'R1', sub: 'innen 192.168.10.1 · außen 203.0.113.5', x: 440, y: 170, kind: 'router' },
-      { id: 'inet', label: 'Internet', sub: '', x: 620, y: 170, kind: 'cloud' },
+      { id: 'r1', label: 'R1', sub: 'innen 192.168.10.1 · außen 203.0.113.5', mac: [['innen', MAC.r1], ['außen', MAC.r1.replace('FE', 'F1')]], x: 440, y: 170, kind: 'router' },
+      { id: 'inet', label: 'Internet', sub: 'nächster Router beim Provider', mac: [['', MAC.isp]], x: 620, y: 170, kind: 'cloud' },
       { id: 'web', label: 'Webserver', sub: '93.184.216.34:443', x: 790, y: 170, kind: 'server' },
     ],
     links: [['pc1', 'sw1', 'Access'], ['sw1', 'r1', 'Trunk'], ['r1', 'inet', 'WAN'], ['inet', 'web', '']],
@@ -69,10 +69,10 @@ export const journeys = [
     id: 'intervlan', title: 'Von VLAN 10 nach VLAN 20', topics: ['vlan', 'switch', 'routing', 'subnetting'],
     desc: 'Zwei PCs hängen am selben Switch, aber in verschiedenen VLANs. Wie kommt das Paket trotzdem an?',
     nodes: [
-      { id: 'pca', label: 'PC-A', sub: '192.168.10.20/24 · VLAN 10', x: 80, y: 90, kind: 'pc' },
-      { id: 'pcb', label: 'PC-B', sub: '192.168.20.30/24 · VLAN 20', x: 80, y: 260, kind: 'pc' },
+      { id: 'pca', label: 'PC-A', sub: '192.168.10.20/24 · VLAN 10', mac: [['', MAC.pc1]], x: 80, y: 90, kind: 'pc' },
+      { id: 'pcb', label: 'PC-B', sub: '192.168.20.30/24 · VLAN 20', mac: [['', MAC.pcb]], x: 80, y: 260, kind: 'pc' },
       { id: 'sw', label: 'SW1', sub: 'Port 1: VLAN 10 · Port 2: VLAN 20 · Port 24: Trunk', x: 340, y: 175, kind: 'switch' },
-      { id: 'r', label: 'R1', sub: 'Gi0/0.10 = 192.168.10.1 · Gi0/0.20 = 192.168.20.1', x: 620, y: 175, kind: 'router' },
+      { id: 'r', label: 'R1', sub: 'Gi0/0.10 = 192.168.10.1 · Gi0/0.20 = 192.168.20.1', mac: [['Gi0/0', MAC.r1]], x: 620, y: 175, kind: 'router' },
     ],
     links: [['pca', 'sw', 'VLAN 10'], ['pcb', 'sw', 'VLAN 20'], ['sw', 'r', 'Trunk']],
     steps: [
@@ -110,11 +110,11 @@ export const journeys = [
     id: 'vpn', title: 'Filiale über VPN', topics: ['vpn', 'routing', 'natpat'],
     desc: 'Ein PC in der Filiale greift auf einen Server in der Zentrale zu. Was sieht man davon im Internet?',
     nodes: [
-      { id: 'pcf', label: 'PC Filiale', sub: '10.2.0.15/24', x: 60, y: 170, kind: 'pc' },
-      { id: 'gwf', label: 'VPN-Gateway Filiale', sub: 'LAN 10.2.0.1 · WAN 198.51.100.2', x: 250, y: 170, kind: 'router' },
+      { id: 'pcf', label: 'PC Filiale', sub: '10.2.0.15/24', mac: [['', MAC.pc1]], x: 60, y: 170, kind: 'pc' },
+      { id: 'gwf', label: 'VPN-Gateway Filiale', sub: 'LAN 10.2.0.1 · WAN 198.51.100.2', mac: [['LAN', MAC.gwf]], x: 250, y: 170, kind: 'router' },
       { id: 'inet', label: 'Internet', sub: '', x: 450, y: 170, kind: 'cloud' },
-      { id: 'gwz', label: 'VPN-Gateway Zentrale', sub: 'WAN 203.0.113.10 · LAN 10.1.0.1', x: 650, y: 170, kind: 'router' },
-      { id: 'srv', label: 'Dateiserver', sub: '10.1.0.10/24', x: 830, y: 170, kind: 'server' },
+      { id: 'gwz', label: 'VPN-Gateway Zentrale', sub: 'WAN 203.0.113.10 · LAN 10.1.0.1', mac: [['LAN', MAC.gwz]], x: 650, y: 170, kind: 'router' },
+      { id: 'srv', label: 'Dateiserver', sub: '10.1.0.10/24', mac: [['', MAC.srv]], x: 830, y: 170, kind: 'server' },
     ],
     links: [['pcf', 'gwf', 'LAN'], ['gwf', 'inet', 'Tunnel'], ['inet', 'gwz', 'Tunnel'], ['gwz', 'srv', 'LAN']],
     steps: [

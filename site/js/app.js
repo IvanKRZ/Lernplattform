@@ -3,7 +3,7 @@ import * as store from './store.js';
 import { subjects, byId } from '../content/subjects.js';
 import { runItems, reviewList } from './engines/runner.js';
 import { quizRound, caseItems, examItems, diagItems, tKey, genRegistry } from './engines/pool.js';
-import { playMatch, playOrder, playFlash } from './engines/games.js';
+import { playMatch, playOrder } from './engines/games.js';
 import { arcadeMenu, playArcade } from './engines/arcade.js';
 import { journeyMenu, playJourney } from './engines/journey.js';
 
@@ -93,7 +93,7 @@ function viewHome() {
     h('h2', { class: 'section' }, 'So lernst du hier am besten'),
     h('ol', { class: 'steps' },
       h('li', {}, h('b', {}, 'Einstufung machen.'), ' 30 Fragen aus allen Themen, das dauert etwa 15 Minuten. Danach siehst du, welche Themen schon sitzen und wo du ansetzen solltest.'),
-      h('li', {}, h('b', {}, 'Die schwachen Themen üben.'), ' Lies die Lernseite des Themas und übe dann mit Quiz, Zuordnen oder Karteikarten. Rechenthemen trainierst du in der Rechen-Arcade.'),
+      h('li', {}, h('b', {}, 'Die schwachen Themen üben.'), ' Lies die Lernseite des Themas und übe dann mit Quiz, Zuordnen oder Reihenfolge. Rechenthemen trainierst du in der Rechen-Arcade.'),
       h('li', {}, h('b', {}, 'Eine Probeklausur schreiben.'), ' 25 gemischte Aufgaben in 45 Minuten. Am Ende bekommst du eine Note nach dem IHK-Schlüssel und alle Lösungen zum Nachlesen.'),
     ),
   );
@@ -106,23 +106,46 @@ function viewSubject(s) {
     h('div', { class: 'page-head' },
       crumb('#/', 'Alle Fächer'),
       h('h1', {}, s.title),
-      h('p', { class: 'lead' }, 'Wähle ein Thema, um die Lernseite zu lesen und zu üben. Neben jedem Thema siehst du, wie sicher du darin schon bist.'),
+      h('p', { class: 'lead' }, 'Übe mit den Spielen quer durch das Fach oder wähle unten ein Thema, um die Lernseite zu lesen. Neben jedem Thema siehst du, wie sicher du darin schon bist.'),
     ),
+    h('section', { class: 'games', 'aria-labelledby': 'games-h' },
+      h('h2', { class: 'section', id: 'games-h' }, 'Üben und spielen'),
+      h('p', { class: 'muted games-lead' }, 'Diese Übungen mischen Aufgaben aus allen Themen des Fachs.'),
+      h('div', { class: 'bento' },
+        tile(`#/f/${s.id}/diagnose`, 'Einstufung', '30 Fragen aus allen Themen. Danach weißt du, welche Themen du noch üben solltest.', diag ? `Zuletzt ${diagAvg(diag)} % richtig` : 'Noch nicht gemacht', 'diag'),
+        tile(`#/f/${s.id}/klausur`, 'Probeklausur', `${s.exam.count} Aufgaben in ${s.exam.minutes} Minuten, ohne Hilfe zwischendurch. Am Ende gibt es eine Note nach IHK-Schlüssel.`, store.getBest(`exam:${s.id}`) ? `Bestes Ergebnis ${store.getBest(`exam:${s.id}`)} %` : 'Noch keine Klausur geschrieben', 'exam', true),
+        tile(`#/f/${s.id}/arcade`, 'Rechen-Arcade', 'Subnetting und Zahlensysteme auf Zeit. Bei Fehlern siehst du den Rechenweg.', arcadeBest() ? `Rekord ${arcadeBest()} Punkte` : 'Noch kein Rekord', 'arcade'),
+        tile(`#/f/${s.id}/reise`, 'Paketreise', 'Begleite ein Datenpaket durchs Netz und entscheide an jeder Station, was passiert.', 'Drei Strecken', 'reise'),
+        tile(`#/f/${s.id}/faelle`, 'Fehlersuche', 'Etwas funktioniert nicht. Du findest heraus, warum.', `${s.cases.length} Fälle aus der Praxis`, 'faelle'),
+      ),
+    ),
+    h('h2', { class: 'section' }, 'Themen'),
     topicList(s.topics.map(t => ({ label: t.title, desc: t.blurb, value: store.mastery(tKey(s, t)), href: `#/f/${s.id}/t/${t.id}`, color: t.color }))),
-    h('h2', { class: 'section' }, 'Übungen für das ganze Fach'),
-    h('div', { class: 'modes' },
-      mode(`#/f/${s.id}/diagnose`, 'Einstufung', '30 Fragen aus allen Themen. Danach siehst du auf einen Blick, welche Themen du noch üben solltest.', diag ? `Zuletzt gemacht am ${new Date(diag.date).toLocaleDateString('de-DE')}. ` : '', diag ? h('a', { href: `#/f/${s.id}/diagnose/ergebnis` }, 'Letztes Ergebnis ansehen') : null),
-      mode(`#/f/${s.id}/arcade`, 'Rechen-Arcade', 'Subnetting, Zahlensysteme und andere Rechnungen auf Zeit. Bei Fehlern siehst du den vollständigen Rechenweg.'),
-      mode(`#/f/${s.id}/reise`, 'Paketreise', 'Du begleitest ein Datenpaket durch ein Netz und entscheidest an jeder Station, was als Nächstes passiert.'),
-      mode(`#/f/${s.id}/faelle`, 'Fehlersuche', `${s.cases.length} Fälle aus der Praxis: Etwas funktioniert nicht, und du findest heraus, warum.`),
-      mode(`#/f/${s.id}/klausur`, 'Probeklausur', `${s.exam.count} Aufgaben in ${s.exam.minutes} Minuten, ohne Hilfe zwischendurch. Am Ende gibt es eine Note.`, '', null, true),
-    ),
+    diag ? h('p', { class: 'small muted' }, h('a', { href: `#/f/${s.id}/diagnose/ergebnis` }, 'Letztes Ergebnis der Einstufung ansehen')) : null,
   );
 }
-function mode(href, title, text, extra = '', link = null, primary = false) {
-  return h('div', { class: `mode ${primary ? 'mode-primary' : ''}` },
-    h('div', {}, h('h3', {}, h('a', { href }, title)), h('p', {}, text, extra ? h('span', { class: 'muted' }, ' ' + extra) : null, link)),
-    h('a', { class: `btn ${primary ? 'btn-primary' : ''}`, href, 'aria-hidden': 'true', tabindex: '-1' }, 'Starten'),
+function diagAvg(d) {
+  const v = Object.values(d.result || {}).filter(x => typeof x === 'number');
+  return v.length ? Math.round(v.reduce((a, b) => a + b, 0) / v.length * 100) : 0;
+}
+function arcadeBest() {
+  return Math.max(...['zahlen', 'subnet', 'sonst', 'mix'].map(k => store.getBest(`arcade:${k}`)));
+}
+const ART = {
+  diag: '<rect x="14" y="58" width="14" height="26" rx="2" class="a2"/><rect x="34" y="40" width="14" height="44" rx="2" class="a1"/><rect x="54" y="66" width="14" height="18" rx="2" class="a3"/><rect x="74" y="28" width="14" height="56" rx="2" class="a1"/><rect x="94" y="50" width="14" height="34" rx="2" class="a2"/><line x1="8" y1="88" x2="114" y2="88" class="ln"/>',
+  exam: '<rect x="20" y="10" width="64" height="82" rx="3" class="paper"/><line x1="30" y1="26" x2="70" y2="26" class="ln"/><line x1="30" y1="38" x2="74" y2="38" class="ln"/><line x1="30" y1="50" x2="64" y2="50" class="ln"/><line x1="30" y1="62" x2="72" y2="62" class="ln"/><circle cx="88" cy="70" r="20" class="a1"/><text x="88" y="78" class="big">1</text>',
+  arcade: '<text x="10" y="34" class="mono">1100 0000</text><text x="10" y="54" class="mono dim">1010 1000</text><text x="10" y="74" class="mono dim">/26  .192</text><circle cx="98" cy="66" r="16" class="ring"/><line x1="98" y1="66" x2="98" y2="55" class="hand"/><line x1="98" y1="66" x2="106" y2="70" class="hand"/><rect x="94" y="44" width="8" height="4" class="a1"/>',
+  reise: '<line x1="18" y1="60" x2="60" y2="30" class="ln"/><line x1="60" y1="30" x2="102" y2="60" class="ln"/><circle cx="18" cy="60" r="9" class="a2"/><circle cx="60" cy="30" r="9" class="a1"/><circle cx="102" cy="60" r="9" class="a3"/><rect x="32" y="40" width="18" height="12" rx="1.5" class="env"/><polyline points="32,40 41,47 50,40" class="envl"/>',
+  faelle: '<rect x="8" y="14" width="104" height="72" rx="4" class="term"/><text x="16" y="34" class="mono t">$ ping 10.0.0.1</text><text x="16" y="50" class="mono t err">keine Antwort</text><text x="16" y="66" class="mono t">$ ipconfig</text><rect x="16" y="72" width="7" height="9" class="a1"/>',
+};
+function tile(href, title, text, stat, art, wide = false) {
+  return h('a', { class: `tile tile-${art}${wide ? ' tile-wide' : ''}`, href },
+    h('div', { class: 'tile-art', 'aria-hidden': 'true', html: `<svg viewBox="0 0 120 96" focusable="false">${ART[art]}</svg>` }),
+    h('div', { class: 'tile-body' },
+      h('h3', {}, title),
+      h('p', {}, text),
+      h('p', { class: 'tile-stat' }, stat),
+    ),
   );
 }
 
@@ -136,7 +159,6 @@ function viewTopic(s, t) {
     ['quiz', 'Quiz', `10 Fragen${t.gens.length ? ', davon einige zum Rechnen' : ''}`, true],
     t.pairs?.length && ['zuordnen', 'Zuordnen', 'Begriffe und Bedeutungen zusammenbringen'],
     t.order?.length && ['reihenfolge', 'Reihenfolge', 'Schritte in die richtige Reihenfolge bringen'],
-    t.cards?.length && ['karten', 'Karteikarten', `${t.cards.length} Karten zum Abfragen`],
     t.gens.length && ['rechnen', 'Rechnen', 'Rechenaufgaben ohne Zeitdruck'],
   ].filter(Boolean);
   add(app, 
@@ -229,6 +251,7 @@ function viewExam(s) {
         const ok = results.filter(r => r.ok).length;
         const p = Math.round(ok / items.length * 100);
         const [g, gt] = grade(p);
+        store.setBest(`exam:${s.id}`, p);
         if (g <= 2) confetti(90);
         const open = items.length - results.length;
         add(el, h('div', { class: 'end' },
@@ -311,7 +334,6 @@ function route() {
     if (act === 'reihenfolge') {
       let k = 0; const go = () => playOrder(app, t.order[k % t.order.length], { topicKey: tKey(s, t), backHref: back, next: t.order.length > 1 ? () => { k++; go(); } : null }); return go();
     }
-    if (act === 'karten') return playFlash(app, t.cards, { topicKey: tKey(s, t), backHref: back });
     if (act === 'rechnen') return playArcade(app, s, { id: 't:' + t.id, title: t.title, gens: t.gens.map(g => genRegistry[g]) }, { sprint: false });
   }
   notFound();

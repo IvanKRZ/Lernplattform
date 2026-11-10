@@ -5,7 +5,6 @@ const empty = () => ({
   xp: 0,
   topics: {},      // "fach/thema" -> { hist: [1,0,1...], total, correct }
   best: {},        // "arcade:modus" -> Punktzahl
-  leitner: {},     // kartenId -> Box 1..5
   streak: { last: null, days: 0 },
   diag: {},        // fach -> { date, result: {thema: quote} }
   achievements: {},
@@ -89,8 +88,6 @@ export function setBest(key, score) {
 }
 export function getBest(key) { return state.best[key] || 0; }
 
-export function leitnerBox(id) { return state.leitner[id] || 1; }
-export function setLeitner(id, box) { state.leitner[id] = Math.max(1, Math.min(5, box)); save(); }
 
 export function saveDiag(subject, result) { state.diag[subject] = { date: today(), result }; save(); }
 export function getDiag(subject) { return state.diag[subject] || null; }

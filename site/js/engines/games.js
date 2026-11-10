@@ -1,4 +1,4 @@
-// Zuordnen, Reihenfolge, Karteikarten
+// Zuordnen und Reihenfolge
 import { h, add, clear, shuffle, toast, confetti, fmtTime, every } from '../ui.js';
 import * as store from '../store.js';
 
@@ -98,63 +98,4 @@ export function playOrder(el, set, { topicKey, backHref, next } = {}) {
     h('p', { class: 'muted' }, 'Klicke die Karten in der richtigen Reihenfolge an. Die richtige Karte wandert nach links in die Liste.'),
     h('div', { class: 'order' }, target, pool),
   );
-}
-
-// ---------- Karteikarten mit Leitner-System ----------
-export function playFlash(el, cards, { topicKey, backHref } = {}) {
-  clear(el);
-  // Karten mit niedriger Box zuerst, innerhalb der Box gemischt
-  const deck = shuffle(cards.map(([f, b], i) => ({ f, b, id: `${topicKey}#${i}` })))
-    .sort((x, y) => store.leitnerBox(x.id) - store.leitnerBox(y.id));
-  let i = 0, known = 0;
-  const stage = h('div', { class: 'flash-stage' });
-  const count = h('span', { class: 'score' });
-  add(el, 
-    h('div', { class: 'run-head' }, h('h2', {}, 'Karteikarten'), h('div', { class: 'run-meta' }, count)),
-    h('p', { class: 'muted' }, 'Überlege dir die Antwort, bevor du die Karte umdrehst. Bewerte dich ehrlich: Karten, die du gewusst hast, kommen später seltener dran.'),
-    stage,
-  );
-  function show() {
-    clear(stage);
-    count.textContent = `${Math.min(i + 1, deck.length)}/${deck.length}`;
-    if (i >= deck.length) {
-      store.addXP(known * 2);
-      add(stage, h('div', { class: 'end small-end' },
-        h('h3', {}, `${known} von ${deck.length} Karten gewusst.`),
-        h('p', { class: 'muted' }, `Du bekommst ${known * 2} Punkte.`),
-        h('div', { class: 'row center' },
-          h('button', { class: 'btn btn-primary', onclick: () => playFlash(el, cards, { topicKey, backHref }) }, 'Nochmal'),
-          backHref ? h('a', { class: 'btn btn-ghost', href: backHref }, 'Zurück') : null)));
-      return;
-    }
-    const c = deck[i];
-    const box = store.leitnerBox(c.id);
-    const card = h('div', { class: 'flash', tabindex: 0 },
-      h('div', { class: 'flash-inner' },
-        h('div', { class: 'flash-face front' }, h('span', { class: 'flash-box' }, `Fach ${box} von 5`), h('div', { html: c.f }), h('small', { class: 'muted' }, 'Zum Umdrehen klicken oder die Leertaste drücken')),
-        h('div', { class: 'flash-face back' }, h('div', { html: c.b })),
-      ));
-    const actions = h('div', { class: 'row center flash-actions hidden' },
-      h('button', { class: 'btn btn-bad', onclick: () => rate(false) }, 'Wusste ich nicht'),
-      h('button', { class: 'btn btn-good', onclick: () => rate(true) }, 'Wusste ich'),
-    );
-    const flip = () => { card.classList.add('flipped'); actions.classList.remove('hidden'); };
-    card.addEventListener('click', flip);
-    add(stage, card, actions);
-    stage.onkeydown = null;
-    const kh = e => {
-      if (!card.isConnected) return document.removeEventListener('keydown', kh);
-      if (e.key === ' ') { e.preventDefault(); flip(); }
-      if (card.classList.contains('flipped')) { if (e.key === '1') rate(false); if (e.key === '2') rate(true); }
-    };
-    document.addEventListener('keydown', kh);
-    function rate(ok) {
-      document.removeEventListener('keydown', kh);
-      store.setLeitner(c.id, ok ? box + 1 : 1);
-      store.record(topicKey, ok);
-      if (ok) known++;
-      i++; show();
-    }
-  }
-  show();
 }

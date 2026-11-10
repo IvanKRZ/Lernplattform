@@ -27,16 +27,24 @@ export function journeyMenu(el, subject) {
 
 export function playJourney(el, subject, j) {
   clear(el);
+  const subOf = n => (n.sub ? n.sub.split(' · ') : []);
+  const bottom = n => n.y + 60 + 13 * (subOf(n).length + (n.mac || []).length) + 10;
   const xs = j.nodes.map(n => n.x), ys = j.nodes.map(n => n.y);
-  const X0 = Math.min(...xs) - 95, Y0 = Math.min(...ys) - 70;
-  const W = Math.max(...xs) + 95 - X0, H = Math.max(...ys) + 105 - Y0;
+  const X0 = Math.min(...xs) - 100, Y0 = Math.min(...ys) - 70;
+  const W = Math.max(...xs) + 100 - X0, H = Math.max(...j.nodes.map(bottom)) + 10 - Y0;
   const pos = id => j.nodes.find(n => n.id === id);
+  const nodeText = n => {
+    const lines = subOf(n).map(t => `<tspan x="0" dy="13">${t}</tspan>`);
+    const macs = (n.mac || []).map(([l, m]) => `<tspan x="0" dy="13" class="nmac" data-mac="${m}">${l ? l + ' ' : ''}${m}</tspan>`);
+    return `<text class="ns" y="47">${lines.join('')}${macs.join('')}</text>`;
+  };
   const svg = `<svg viewBox="${X0} ${Y0} ${W} ${H}" class="netmap">
     ${j.links.map(([a, b, l]) => { const A = pos(a), B = pos(b); return `<g class="lnk" data-k="${a}-${b}"><line x1="${A.x}" y1="${A.y}" x2="${B.x}" y2="${B.y}"/>${l ? `<text x="${(A.x + B.x) / 2}" y="${(A.y + B.y) / 2 - 10}">${l}</text>` : ''}</g>`; }).join('')}
-    ${j.nodes.map(n => `<g class="node node-${n.kind}" data-id="${n.id}" transform="translate(${n.x},${n.y})"><g class="ico">${ICON[n.kind]}</g><text class="nl" y="44">${n.label}</text><text class="ns" y="60">${(n.sub || '').split(' · ').map((t, k) => `<tspan x="0" dy="${k ? 13 : 0}">${t}</tspan>`).join('')}</text></g>`).join('')}
+    ${j.nodes.map(n => `<g class="node node-${n.kind}" data-id="${n.id}" transform="translate(${n.x},${n.y})"><g class="ico">${ICON[n.kind]}</g><text class="nl" y="44">${n.label}</text>${nodeText(n)}</g>`).join('')}
     <g class="pkt" transform="translate(${j.nodes[0].x},${j.nodes[0].y - 34})"><rect x="-14" y="-9" width="28" height="18" rx="3"/><path d="M-14 -9l14 10l14 -10"/></g>
   </svg>`;
   const net = h('div', { class: 'net-wrap', html: svg });
+  const legend = h('p', { class: 'mac-legend small muted' }, 'In der Grafik ist die ', h('span', { class: 'mac-src' }, 'Quell-MAC'), ' und die ', h('span', { class: 'mac-dst' }, 'Ziel-MAC'), ' des aktuellen Frames markiert. Switches haben keine eigene Adresse im Frame, sie leiten ihn nur weiter.');
   const hdr = h('div', { class: 'hdr' });
   const tbl = h('pre', { class: 'pre rtable' });
   const tblBox = h('div', { class: 'hidden' }, h('h4', {}, 'Routing-Tabelle von R1'), tbl);
@@ -45,6 +53,7 @@ export function playJourney(el, subject, j) {
   add(el, 
     h('div', { class: 'run-head' }, h('div', {}, h('a', { class: 'crumb', href: `#/f/${subject.id}/reise` }, 'Alle Paketreisen'), h('h2', {}, j.title)), prog),
     net,
+    legend,
     h('div', { class: 'jgrid' }, h('div', {}, h('h4', {}, 'Was gerade im Paket steht'), hdr, tblBox), panel),
   );
   j.steps.forEach(() => add(prog, h('i')));
@@ -53,8 +62,12 @@ export function playJourney(el, subject, j) {
   const F = [['smac', 'Quell-MAC'], ['dmac', 'Ziel-MAC'], ['vlan', 'VLAN-Tag'], ['sip', 'Quell-IP'], ['dip', 'Ziel-IP'], ['sport', 'Quell-Port'], ['dport', 'Ziel-Port']];
   function drawHdr(changed = []) {
     clear(hdr);
+    net.querySelectorAll('.nmac').forEach(t => {
+      t.classList.toggle('is-src', t.dataset.mac === pkt.smac);
+      t.classList.toggle('is-dst', t.dataset.mac === pkt.dmac);
+    });
     if (!Object.keys(pkt).length) { add(hdr, h('p', { class: 'muted small' }, 'Noch ist kein Paket unterwegs.')); return; }
-    F.forEach(([k, l]) => add(hdr, h('div', { class: `hf ${changed.includes(k) ? 'chg' : ''} ${k === 'vlan' && (!pkt.vlan || pkt.vlan === '–') ? 'dim' : ''}` }, h('span', {}, l), h('b', { class: 'mono' }, pkt[k] ?? '–'))));
+    F.forEach(([k, l]) => add(hdr, h('div', { class: `hf hf-${k} ${changed.includes(k) ? 'chg' : ''} ${k === 'vlan' && (!pkt.vlan || pkt.vlan === '–') ? 'dim' : ''}` }, h('span', {}, l), h('b', { class: 'mono' }, pkt[k] ?? '–'))));
   }
   function movePkt(at) {
     let x, y;

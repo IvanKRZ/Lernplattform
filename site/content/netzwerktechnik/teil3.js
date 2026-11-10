@@ -89,6 +89,9 @@ export const routing = {
     { id: 'r20', type: 'mc', q: 'Welche Routen legt ein Cisco-Router für jedes eingerichtete Interface automatisch an?', options: ['Eine C-Route und eine L-Route', 'Nur eine S-Route', 'Eine Default-Route', 'Gar keine'], answer: 0, explain: 'C für das angeschlossene Netz und L für die eigene Adresse des Interfaces als /32.' },
     { id: 'r21', type: 'mc', q: 'Welche Art von Routing-Protokoll <b>konvergiert</b> in der Regel schneller, passt sich also schneller an Änderungen im Netz an?', options: ['Link State', 'Distance Vector', 'Statisches Routing', 'Beide gleich schnell'], answer: 0, explain: 'Bei Link State kennt jeder Router das ganze Netz und kann sofort selbst neu rechnen. Bei Distance Vector muss sich eine Änderung erst von Nachbar zu Nachbar herumsprechen.' },
     { id: 'r22', type: 'mc', q: 'Was ist der wichtigste Unterschied zwischen <b>Switching</b> und <b>Routing</b>?', options: ['Switching leitet innerhalb eines Netzes weiter (MAC), Routing zwischen Netzen (IP)', 'Switching nutzt IP-Adressen, Routing MAC-Adressen', 'Routing gibt es nur im WLAN', 'Es gibt keinen Unterschied'], answer: 0, explain: 'Der Switch arbeitet auf Schicht 2 mit MAC-Adressen im eigenen Netz. Der Router arbeitet auf Schicht 3 mit IP-Adressen zwischen verschiedenen Netzen.' },
+    { id: 'r23', type: 'mc', q: 'Was ist das <b>Default-Gateway</b> eines PCs?', options: ['Der Router im eigenen Netz, an den alle Pakete für fremde Netze gehen', 'Der DNS-Server', 'Der Switch, an dem der PC hängt', 'Die Broadcastadresse des Netzes'], answer: 0, explain: 'Alles, was nicht im eigenen Netz liegt, schickt der PC an sein Default-Gateway. Der Router kümmert sich dann um den weiteren Weg.' },
+    { id: 'r24', type: 'mc', q: 'Welche <b>administrative Distanz</b> hat OSPF bei Cisco?', options: ['110', '90', '120', '1'], answer: 0, explain: 'Direkt verbunden 0, statisch 1, EIGRP 90, OSPF 110, RIP 120.' },
+    { id: 'r25', type: 'mc', q: 'Wie arbeiten <b>Distance-Vector</b>-Protokolle?', options: ['Jeder Router schickt regelmäßig seine Routing-Tabelle an seine direkten Nachbarn', 'Jeder Router kennt die gesamte Topologie und rechnet selbst den kürzesten Weg', 'Der Administrator trägt alle Routen von Hand ein', 'Ein zentraler Server berechnet alle Routen'], answer: 0, explain: 'Die Nachbarn übernehmen die Infos und addieren ihre eigenen Kosten. Die zweite Antwort beschreibt Link State.' },
   ],
   pairs: [
     { title: 'Code und Herkunft', items: [['C', 'direkt verbunden'], ['L', 'eigene IP des Interfaces'], ['S', 'statisch'], ['R', 'RIP'], ['O', 'OSPF'], ['D', 'EIGRP']] },
@@ -97,18 +100,6 @@ export const routing = {
   ],
   order: [
     { title: 'Sortiere die Schritte eines Routers beim Weiterleiten', items: ['Frame empfangen und auspacken', 'Ziel-IP mit der Routing-Tabelle vergleichen', 'Den besten Weg auswählen', 'Für die nächste Strecke neu einpacken', 'Weiterschicken'] },
-  ],
-  cards: [
-    ['Was ist das Default-Gateway?', 'Der Router im eigenen Netz, an den alle Pakete für fremde Netze gehen.'],
-    ['Metrik oder administrative Distanz?', 'Die Metrik vergleicht Wege eines Protokolls, die AD vergleicht verschiedene Quellen. Bei beiden gewinnt der kleinere Wert.'],
-    ['Welche AD-Werte sollte man kennen?', 'Direkt verbunden 0, statisch 1, EIGRP 90, OSPF 110, RIP 120.'],
-    ['Was zeichnet RIP aus?', 'Distance Vector, Metrik Hop-Count, höchstens 15 Hops, Austausch alle 30 Sekunden.'],
-    ['Was zeichnet OSPF aus?', 'Link State, SPF-Algorithmus, Areas, VLSM und CIDR, für große Netze.'],
-    ['Was zeichnet EIGRP aus?', 'Von Cisco, Distance Vector, Metrik aus Bandbreite, Verzögerung, Last und Zuverlässigkeit.'],
-    ['Distance Vector oder Link State?', 'Distance Vector: Tabelle an die Nachbarn. Link State: Infos über die eigenen Verbindungen an alle.'],
-    ['Wie lautet eine Default-Route bei Cisco?', 'ip route 0.0.0.0 0.0.0.0 und dahinter der nächste Router oder das Interface.'],
-    ['Was bedeutet Konvergenz beim Routing?', 'Nach einer Änderung haben alle Router wieder dasselbe, richtige Bild vom Netz. Link State konvergiert schneller als Distance Vector.'],
-    ['Switching oder Routing?', 'Switching: innerhalb eines Netzes, MAC-Adressen, Schicht 2. Routing: zwischen Netzen, IP-Adressen, Schicht 3.'],
   ],
 };
 
@@ -173,14 +164,6 @@ export const natpat = {
   ],
   pairs: [
     { title: 'NAT-Begriffe', items: [['Intern lokal', 'private Adresse des PCs'], ['Intern global', 'öffentliche Adresse des PCs nach NAT'], ['Extern global', 'echte Adresse des Ziels'], ['Statisches NAT', 'feste Zuordnung 1 zu 1'], ['Dynamisches NAT', 'Adresse aus einem Pool'], ['PAT', 'viele Geräte, eine Adresse, über Ports']] },
-  ],
-  cards: [
-    ['Welche Adressbereiche sind privat?', '10.0.0.0/8, 172.16.0.0/12 und 192.168.0.0/16'],
-    ['Statisches NAT, dynamisches NAT, PAT?', 'Fest 1 zu 1, aus einem Pool, viele Geräte über Ports.'],
-    ['Welche Portgruppen gibt es bei PAT?', '0–511, 512–1023 und 1024–65535'],
-    ['Wie lauten die PAT-Regeln?', '1. Port behalten. 2. Sonst erster freier Port der Gruppe von unten. 3. Sonst nächste IP aus dem Pool.'],
-    ['Was ist Masquerading?', 'Der Router setzt seine eigene öffentliche Adresse als Quelle ein und merkt sich die Zuordnung der Ports.'],
-    ['Was ist eine Portweiterleitung?', 'Eingehende Verbindungen auf einen Port werden an ein internes Gerät weitergeleitet.'],
   ],
 };
 
@@ -269,15 +252,5 @@ export const vpn = {
     { title: 'VPN-Art und anderer Name', items: [['End-to-Site', 'Remote-Access-VPN'], ['Site-to-Site', 'LAN-to-LAN-VPN'], ['End-to-End', 'Host-to-Host-VPN']] },
     { title: 'Begriffe', items: [['IKE', 'Schlüsselaustausch über UDP 500'], ['ESP', 'IP-Protokoll 50'], ['AH', 'IP-Protokoll 51'], ['Transportmodus', 'nur Nutzdaten verschlüsselt'], ['Tunnelmodus', 'ganzes Paket eingepackt'], ['AES-256', '2<sup>256</sup> mögliche Schlüssel']] },
     { title: 'AAA', items: [['Authentication', 'Identität prüfen'], ['Authorization', 'Darf der Nutzer den Dienst nutzen?'], ['Accounting', 'Nutzung festhalten']] },
-  ],
-  cards: [
-    ['Welche VPN-Arten gibt es?', 'End-to-Site, Site-to-Site und End-to-End.'],
-    ['Welche VPN-Protokolle nennen die Unterlagen?', 'IPsec, PPTP, L2TP, L2TP over IPsec, SSL-VPN und WireGuard. OpenVPN ist eine Software.'],
-    ['Was muss eine Firewall für IPsec durchlassen?', 'UDP 500 für IKE, Protokoll 50 für ESP und gegebenenfalls Protokoll 51 für AH.'],
-    ['Transportmodus oder Tunnelmodus?', 'Transport: nur Nutzdaten verschlüsselt, Header bleibt. Tunnel: ganzes Paket in ein neues IP-Paket eingepackt.'],
-    ['Wofür steht AAA?', 'Authentication, Authorization, Accounting.'],
-    ['Was ist der Vorteil von SSL-VPN?', 'Es läuft über normales TCP oder UDP und kommt dadurch auch durch eingeschränkte Netze.'],
-    ['Welche anderen Namen gibt es für die VPN-Arten?', 'End-to-Site: Remote-Access. Site-to-Site: LAN-to-LAN oder Gateway-to-Gateway. End-to-End: Host-to-Host.'],
-    ['Welche drei Ziele hat ein VPN?', 'Vertraulichkeit, Integrität und Authentizität.'],
   ],
 };

@@ -99,23 +99,13 @@ export const kabel = {
     { id: 'k24', type: 'multi', q: 'Welche Aussagen sind <b>Nachteile</b> von Glasfaser?', options: ['Die Stecker sind empfindlich gegen Schmutz', 'Bei starkem Knicken kann die Faser brechen', 'Power over Ethernet ist nicht möglich', 'Elektromagnetische Felder stören die Übertragung'], answer: [0, 1, 2], explain: 'Gegen elektromagnetische Störungen ist Glasfaser gerade unempfindlich, das ist einer ihrer großen Vorteile.' },
     { id: 'k25', type: 'mc', q: 'Was bedeutet <b>S/FTP</b> bei Twisted-Pair-Kabeln?', options: ['Gesamtschirm um alle Paare, dazu jedes Paar mit Folie geschirmt', 'Keine Schirmung', 'Nur ein Gesamtschirm', 'Jedes Paar mit Kupfergeflecht, kein Gesamtschirm'], answer: 0, explain: 'S vor dem Schrägstrich steht für den Gesamtschirm, FTP für die Folie um jedes einzelne Paar.' },
     { id: 'k26', type: 'mc', q: 'Warum ist die Verbindungstechnik bei <b>Multimode</b> einfacher als bei Singlemode?', options: ['Der Kern ist dicker, deshalb muss beim Verbinden nicht so genau gearbeitet werden', 'Multimode braucht keine Stecker', 'Multimode wird mit Kupfer verbunden', 'Multimode hat keinen Mantel'], answer: 0, explain: 'Bei einem Kern von 50 µm statt 9 µm ist mehr Spielraum, wenn zwei Fasern aufeinandertreffen.' },
+    { id: 'k27', type: 'mc', q: 'Was ist der Unterschied zwischen <b>Patchkabel</b> und <b>Verlegekabel</b>?', options: ['Das Patchkabel ist flexibel und steckt am Gerät, das Verlegekabel liegt fest in der Wand', 'Das Patchkabel ist aus Glasfaser, das Verlegekabel aus Kupfer', 'Das Verlegekabel ist immer gekreuzt', 'Es gibt keinen Unterschied'], answer: 0, explain: 'Das Verlegekabel verbindet Patchfeld und Netzwerkdose fest. Die flexiblen Patchkabel verbinden an beiden Enden die Geräte.' },
+    { id: 'k28', type: 'mc', q: 'Was bedeutet <b>Halbduplex</b>?', options: ['Ein Gerät kann senden oder empfangen, aber nicht beides gleichzeitig', 'Ein Gerät sendet nur mit halber Geschwindigkeit', 'Nur die Hälfte der Adern wird genutzt', 'Senden und Empfangen gleichzeitig'], answer: 0, explain: 'Bei Halbduplex wechseln Senden und Empfangen sich ab. Gleichzeitig geht es erst bei Vollduplex.' },
   ],
   pairs: [
     { title: 'Schirmung', items: [['UTP', 'keine Schirmung'], ['FTP', 'Paare mit Alufolie'], ['STP', 'Paare mit Kupfergeflecht'], ['S/UTP', 'nur Gesamtschirm'], ['S/STP', 'Gesamtschirm und Paare']] },
     { title: 'Begriffe', items: [['Primärverkabelung', 'zwischen Gebäuden'], ['Sekundärverkabelung', 'zwischen Etagen'], ['Tertiärverkabelung', 'bis zum Arbeitsplatz'], ['CSMA/CD', 'Ethernet im Halbduplex'], ['CSMA/CA', 'WLAN'], ['Auto-MDI-X', 'ersetzt das Crossover-Kabel']] },
     { title: 'Glasfaser', items: [['Singlemode', 'Laser, viele km, gelb'], ['Multimode', 'LED, bis ca. 550 m, orange'], ['LC', 'Lucent Connector'], ['SC', 'Subscriber Connector'], ['OM3/OM4', '10 Gbit/s und mehr']] },
-  ],
-  cards: [
-    ['Wie lang darf eine Twisted-Pair-Strecke höchstens sein?', '100 m von aktivem zu aktivem Gerät.'],
-    ['Was sind Primär-, Sekundär- und Tertiärverkabelung?', 'Zwischen Gebäuden, zwischen Etagen und auf der Etage bis zum Arbeitsplatz.'],
-    ['Was ist der Unterschied zwischen Patch- und Verlegekabel?', 'Das Patchkabel ist flexibel und steckt am Gerät. Das Verlegekabel liegt fest in der Wand.'],
-    ['Wie unterscheiden sich Singlemode und Multimode?', 'Singlemode: dünner Kern, Laser, viele Kilometer, gelb. Multimode: dicker Kern, LED, bis ca. 550 m, orange.'],
-    ['Wie berechnet man das Dämpfungsbudget?', 'Länge in km mal dB/km, plus Anzahl der Stecker mal 0,75 dB.'],
-    ['Was bedeutet galvanische Trennung?', 'Glasfaser leitet keinen Strom. Deshalb gibt es keine Ausgleichsströme und keine Gefahr durch Blitzschlag.'],
-    ['Was ist der Unterschied zwischen Halb- und Vollduplex?', 'Halbduplex: senden oder empfangen. Vollduplex: beides gleichzeitig.'],
-    ['Wo nutzt man CSMA/CD und wo CSMA/CA?', 'CSMA/CD bei Ethernet im Halbduplex, CSMA/CA bei WLAN.'],
-    ['Wie dick ist der Kern bei Singlemode und Multimode?', 'Singlemode etwa 9 µm, Multimode 50 oder 62,5 µm. Das Mantelglas hat bei beiden 125 µm.'],
-    ['Nenne Nachteile von Glasfaser.', 'Teurer, Installation braucht Fachwissen, Stecker empfindlich gegen Schmutz, Bruchgefahr beim Knicken, kein PoE.'],
   ],
 };
 
@@ -162,18 +152,10 @@ export const topologien = {
     { id: 't11', type: 'tf', q: 'Ein erweiterter Stern ist eine Hybrid-Topologie.', answer: true, explain: 'Mehrere Sterne werden miteinander verbunden. Es werden also Topologien kombiniert.' },
     { id: 't12', type: 'tf', q: 'Physische und logische Topologie eines Netzes sind immer gleich.', answer: false, explain: 'Ein Hub ist zum Beispiel physisch ein Stern, logisch aber ein Bus, weil sich alle Geräte das Medium teilen.' },
     { id: 't13', type: 'mc', q: 'Wie nennt man den <b>erweiterten Stern</b> auch?', options: ['Baumtopologie', 'Ringtopologie', 'Bustopologie', 'Punkt-zu-Punkt'], answer: 0, explain: 'Bei der Baumtopologie gehen von einem zentralen Knoten Verzweigungen zu weiteren Sternen aus, wie Äste von einem Stamm.' },
+    { id: 't14', type: 'mc', q: 'Was beschreibt die <b>physische</b> Topologie?', options: ['Den tatsächlichen Aufbau: Standorte der Geräte, Kabelverlauf, Grundriss', 'Den Datenfluss und das IP-Schema', 'Die Namen der Geräte', 'Die Verschlüsselung'], answer: 0, explain: 'Physisch heißt: wie es wirklich verkabelt ist. Wie die Daten fließen, zeigt die logische Topologie.' },
   ],
   pairs: [
     { title: 'Topologie und Merkmal', items: [['Stern', 'zentraler Switch'], ['Bus', 'Abschlusswiderstände'], ['Ring', 'Token Ring, FDDI'], ['Vollvermaschung', 'jeder mit jedem'], ['Hub-and-Spoke', 'alles über die Zentrale'], ['Hybrid', 'Kombination mehrerer Formen']] },
-  ],
-  cards: [
-    ['Was zeigt die physische Topologie?', 'Den tatsächlichen Aufbau: Standorte der Geräte, Kabelverlauf, Grundriss.'],
-    ['Was zeigt die logische Topologie?', 'Den Datenfluss: IP-Schema, Namen, genutzte Anschlüsse.'],
-    ['Wie viele Verbindungen braucht eine Vollvermaschung mit n Standorten?', 'n · (n − 1) : 2'],
-    ['Vor- und Nachteile der Stern-Topologie?', 'Einfach, erweiterbar, schnelle Fehlersuche. Aber: Fällt der Switch aus, fällt alles aus.'],
-    ['Was kennzeichnet die Bus-Topologie?', 'Eine gemeinsame Leitung mit Abschlusswiderständen. Früher Ethernet über Koax, heute in Autos und Industrie.'],
-    ['Was kennzeichnet die Ring-Topologie?', 'Jedes Gerät ist mit seinen Nachbarn verbunden, kein Abschlusswiderstand. Früher Token Ring und FDDI.'],
-    ['Was ist eine Baumtopologie?', 'Ein anderer Name für den erweiterten Stern: mehrere Sterne, die von einem zentralen Knoten aus verbunden sind.'],
   ],
 };
 
@@ -230,18 +212,10 @@ export const switching = {
     { id: 'w12', type: 'mc', q: 'Was gibt der <b>OUI</b>-Teil einer MAC-Adresse an?', options: ['Den Hersteller des Netzwerkadapters', 'Das VLAN des Geräts', 'Die IP-Adresse des Geräts', 'Den Switch-Port'], answer: 0, explain: 'Die ersten 24 Bit einer MAC-Adresse sind der OUI. Er ist jedem Hersteller fest zugeteilt. Die zweiten 24 Bit nummerieren die einzelnen Geräte.' },
     { id: 'w13', type: 'mc', q: 'Mit welchem Protokoll findet ein PC zu einer IP-Adresse die passende <b>MAC-Adresse</b>?', options: ['ARP', 'DNS', 'DHCP', 'ICMP'], answer: 0, explain: 'ARP schickt einen Broadcast „Wer hat diese IP?“, und das passende Gerät antwortet mit seiner MAC-Adresse. DNS löst dagegen Namen in IP-Adressen auf.' },
     { id: 'w14', type: 'tf', q: 'Ein Switch entscheidet anhand der <b>Ziel-MAC-Adresse</b> eines Frames, an welchen Port er ihn schickt.', answer: true, explain: 'Er liest die Ziel-MAC und schaut in seiner Tabelle nach, hinter welchem Port sie sitzt. Gelernt hat er diese Tabelle vorher aus den Quell-MAC-Adressen.' },
+    { id: 'w15', type: 'mc', q: 'Was unterscheidet einen <b>managed</b> Switch von einem unmanaged Switch?', options: ['Er lässt sich konfigurieren, zum Beispiel für VLANs', 'Er hat immer mehr Ports', 'Er arbeitet nur auf Schicht 1', 'Er braucht keinen Strom'], answer: 0, explain: 'Ein unmanaged Switch wird nur eingesteckt und funktioniert. Einen managed Switch kann man einrichten, zum Beispiel VLANs anlegen.' },
   ],
   pairs: [
     { title: 'Hub oder Switch?', items: [['schickt alles an alle Ports', 'Hub'], ['lernt MAC-Adressen', 'Switch'], ['arbeitet auf Schicht 1', 'Hub'], ['arbeitet auf Schicht 2', 'Switch'], ['verbindet zwei Ports direkt', 'Switch'], ['das langsamste Gerät bremst alle', 'Hub']] },
-  ],
-  cards: [
-    ['Was steht in der Source Address Table?', 'Die Quell-MAC-Adresse und der Port, an dem der Frame ankam.'],
-    ['Was passiert bei einer unbekannten Ziel-MAC?', 'Der Switch flutet den Frame an alle Ports außer dem Eingangsport.'],
-    ['Was ist eine MAC-Adresse?', 'Die 48 Bit lange Hardware-Adresse eines Netzwerkadapters, hexadezimal geschrieben.'],
-    ['Hub oder Switch: wer schickt an alle?', 'Der Hub (Schicht 1). Der Switch (Schicht 2) schickt gezielt an den Zielport.'],
-    ['Managed oder unmanaged?', 'Unmanaged: einstecken und fertig. Managed: konfigurierbar, zum Beispiel für VLANs.'],
-    ['Was ist der OUI?', 'Die ersten 24 Bit der MAC-Adresse. Sie zeigen den Hersteller des Adapters.'],
-    ['Wofür ist ARP da?', 'ARP findet zu einer IP-Adresse im eigenen Netz die passende MAC-Adresse, per Broadcast-Anfrage.'],
   ],
 };
 
@@ -294,13 +268,5 @@ export const vlan = {
   ],
   pairs: [
     { title: 'Begriffe', items: [['802.1Q', 'Standard für VLAN-Tags'], ['Trunk', 'mehrere VLANs über ein Kabel'], ['Access-Port', 'genau ein VLAN, ohne Tag'], ['VLAN-ID', '12 Bit'], ['Layer-3-Switch', 'routet zwischen VLANs'], ['VXLAN', 'etwa 16,7 Millionen Netze']] },
-  ],
-  cards: [
-    ['Was ist ein VLAN?', 'Ein logisches Netz innerhalb eines physischen Netzes. Es verhält sich wie ein eigener Switch.'],
-    ['Portbasiert oder tagged?', 'Portbasiert: ein VLAN pro Port. Tagged (802.1Q): mehrere VLANs über einen Port.'],
-    ['Wie lang ist die VLAN-ID?', '12 Bit, also 4.096 mögliche Werte.'],
-    ['Wo sitzt der VLAN-Tag?', 'Im Ethernet-Frame direkt nach den MAC-Adressen.'],
-    ['Wie kommunizieren zwei VLANs miteinander?', 'Über einen Router (mit Subinterfaces) oder einen Layer-3-Switch.'],
-    ['Statisches oder dynamisches VLAN?', 'Statisch: Ports von Hand fest zugeordnet. Dynamisch: Zuordnung automatisch, zum Beispiel nach MAC-Adresse.'],
   ],
 };

@@ -74,19 +74,13 @@ export const zahlensysteme = {
     { id: 'z14', type: 'mc', q: 'Was ist ein <b>Suffix</b>?', options: ['Eine Nachsilbe, zum Beispiel die Endung .xlsx', 'Eine Vorsilbe, zum Beispiel Kilo-', 'Die Kennzeichnung einer Hex-Zahl', 'Ein Stellenwert'], answer: 0, explain: 'Ein Suffix steht hinten, ein Präfix steht vorne. „Kilo“ in Kilobyte ist also ein Präfix, „.docx“ in einem Dateinamen ein Suffix.' },
     { id: 'z15', type: 'multi', q: 'Welche dieser Werte sind <b>gleich</b> 255?', options: ['FF<sub>16</sub>', '1111 1111<sub>2</sub>', '2<sup>8</sup>', '377<sub>8</sub>'], answer: [0, 1, 3], explain: 'FF, 1111 1111 und 377 im Achtersystem (3 · 64 + 7 · 8 + 7) ergeben alle 255. 2<sup>8</sup> ist dagegen 256.' },
     { id: 'z16', type: 'input', q: 'Wie viele <b>Byte</b> hat <b>1 GiB</b>?', accept: ['1073741824', '1.073.741.824'], explain: '1 GiB sind 2<sup>30</sup> Byte. Das sind 1.073.741.824 Byte.' },
+    { id: 'z17', type: 'mc', q: 'Welche Stellenwerte hat ein Oktett, von links nach rechts gelesen?', options: ['128, 64, 32, 16, 8, 4, 2, 1', '1, 2, 4, 8, 16, 32, 64, 128', '256, 128, 64, 32, 16, 8, 4, 2', '100, 50, 25, 12, 6, 3, 2, 1'], answer: 0, explain: 'Ganz rechts steht 2<sup>0</sup> = 1, ganz links 2<sup>7</sup> = 128. Jede Stelle nach links verdoppelt den Wert.' },
+    { id: 'z18', type: 'mc', q: 'Wie rechnet man mit dem <b>Restwertverfahren</b> eine Dezimalzahl in Hexadezimal um?', options: ['Immer wieder durch 16 teilen und die Reste von unten nach oben lesen', 'Immer wieder mit 16 malnehmen und die Ergebnisse addieren', 'Durch 2 teilen und die Reste von oben nach unten lesen', 'Die Ziffern einzeln durch 16 teilen'], answer: 0, explain: 'Man teilt so lange durch 16, bis 0 herauskommt. Der letzte Rest ist die vorderste Ziffer, deshalb liest man von unten nach oben.' },
+    { id: 'z19', type: 'mc', q: 'Wie rechnet man eine Binärzahl am schnellsten in Hexadezimal um?', options: ['In Vierergruppen teilen und jede Gruppe einzeln in eine Hex-Ziffer umrechnen', 'Erst in Dezimal und dann in Oktal umrechnen', 'In Achtergruppen teilen und jede durch 16 teilen', 'Die Einsen zählen'], answer: 0, explain: 'Eine Hex-Ziffer steht für genau 4 Bit. Aus 1111 0000 wird so F0.' },
   ],
   pairs: [
     { title: 'Binär und Dezimal', items: [['1000 0000', '128'], ['1100 0000', '192'], ['1110 0000', '224'], ['1111 0000', '240'], ['1111 1000', '248'], ['1111 1100', '252']] },
     { title: 'Präfixe und ihr Wert', items: [['1 kB', '1.000 Byte'], ['1 KiB', '1.024 Byte'], ['1 MB', '1.000.000 Byte'], ['1 MiB', '1.048.576 Byte'], ['1 Byte', '8 Bit'], ['2<sup>10</sup>', '1.024']] },
-  ],
-  cards: [
-    ['Wie lauten die Stellenwerte eines Oktetts?', '128, 64, 32, 16, 8, 4, 2, 1'],
-    ['Wofür stehen A bis F im Hexadezimalsystem?', 'A = 10, B = 11, C = 12, D = 13, E = 14, F = 15'],
-    ['Wie rechnet man dezimal in hexadezimal um?', 'Immer wieder durch 16 teilen und die Reste notieren. Am Ende die Reste von unten nach oben lesen.'],
-    ['Wie rechnet man binär in hexadezimal um?', 'Die Binärzahl in Vierergruppen teilen und jede Gruppe einzeln in eine Hex-Ziffer umrechnen.'],
-    ['Was ist der Unterschied zwischen kB und KiB?', 'kB ist dezimal (SI) und hat 1.000 Byte. KiB ist binär (IEC) und hat 1.024 Byte.'],
-    ['Warum zeigt Windows bei einer 1-TB-Platte weniger an?', 'Der Hersteller rechnet mit 10<sup>12</sup> Byte, Windows rechnet binär. Dadurch erscheinen nur etwa 931 GB.'],
-    ['Wann schreibt man ein Präfix klein?', 'Bei Kilo (kB) und bei Teilen einer Einheit, zum Beispiel ml. Sonst werden Vielfache groß geschrieben.'],
   ],
 };
 
@@ -166,22 +160,12 @@ export const subnetting = {
     { id: 's19', type: 'tf', q: 'Die Broadcastadresse ist immer die letzte Adresse eines Subnetzes.', answer: true, explain: 'Bei der Broadcastadresse sind alle Hostbits 1. Das ist die höchste Adresse im Subnetz. Die Netzadresse ist entsprechend die erste.' },
     { id: 's20', type: 'input', q: '192.168.30.0/24 wird in <b>8</b> gleich große Subnetze geteilt. Wie viele Host-Adressen kann man in <b>allen 8 Subnetzen zusammen</b> nutzen?', accept: ['240'], explain: 'Für 8 Subnetze leiht man 3 Bit, das ergibt /27 mit 32 Adressen pro Subnetz. Davon sind 30 nutzbar. 8 · 30 = 240.' },
     { id: 's21', type: 'mc', q: 'Wie ist eine IPv4-Adresse aufgebaut?', options: ['32 Bit, dargestellt als vier Oktette mit Werten von 0 bis 255', '48 Bit, dargestellt als sechs Hex-Paare', '128 Bit, dargestellt als acht Hex-Blöcke', '32 Bit, dargestellt als acht Hex-Blöcke'], answer: 0, explain: 'IPv4 hat 32 Bit, aufgeteilt in vier Oktette zu je 8 Bit. Jedes Oktett kann Werte von 0 bis 255 annehmen. 48 Bit hat die MAC-Adresse, 128 Bit eine IPv6-Adresse.' },
+    { id: 's22', type: 'mc', q: 'Wie viele Subnetze entstehen, wenn man <b>n Bits</b> aus dem Hostanteil leiht?', options: ['2<sup>n</sup>', '2<sup>n</sup> − 2', 'n · 2', 'n<sup>2</sup>'], answer: 0, explain: 'Mit n Bit lassen sich 2<sup>n</sup> verschiedene Kombinationen bilden, also 2<sup>n</sup> Subnetze. Die −2 gilt nur bei der Anzahl der Hosts.' },
+    { id: 's23', type: 'mc', q: 'Wie berechnet man die <b>Blockgröße</b> (magische Zahl) beim Subnetting?', options: ['256 minus den Maskenwert im Oktett, in dem die Grenze liegt', '32 minus das Präfix', '2 hoch Präfix', 'Maskenwert geteilt durch 8'], answer: 0, explain: 'Beispiel /27: Im letzten Oktett steht 224, also 256 − 224 = 32. Die Subnetze beginnen bei 0, 32, 64 und so weiter.' },
   ],
   pairs: [
     { title: 'Präfix und Subnetzmaske', items: [['/25', '255.255.255.128'], ['/26', '255.255.255.192'], ['/27', '255.255.255.224'], ['/28', '255.255.255.240'], ['/29', '255.255.255.248'], ['/30', '255.255.255.252']] },
     { title: 'Präfix und nutzbare Hosts', items: [['/24', '254'], ['/25', '126'], ['/27', '30'], ['/28', '14'], ['/30', '2'], ['/22', '1.022']] },
-  ],
-  cards: [
-    ['Wie berechnet man die nutzbaren Hosts?', '2<sup>Hostbits</sup> − 2. Die Hostbits sind 32 minus Präfix.'],
-    ['Wie viele Subnetze entstehen mit n geliehenen Bits?', '2<sup>n</sup> Subnetze.'],
-    ['Was ist die Blockgröße (magische Zahl)?', '256 minus der Maskenwert im Oktett, in dem die Grenze liegt. Subnetze beginnen bei Vielfachen davon.'],
-    ['Woran erkennt man die Netzadresse?', 'Alle Hostbits sind 0.'],
-    ['Woran erkennt man die Broadcastadresse?', 'Alle Hostbits sind 1.'],
-    ['In welcher Reihenfolge vergibt man Netze bei VLSM?', 'Vom größten zum kleinsten Netz.'],
-    ['Wozu dient Supernetting?', 'Es fasst Netze zusammen, damit der Router weniger Einträge in seiner Routing-Tabelle braucht.'],
-    ['Was ist eine Broadcast-Domäne?', 'Der Bereich, den ein Broadcast erreicht. Router begrenzen ihn.'],
-    ['Womit unterteilt man eine Broadcast-Domäne?', 'Mit Routern, Subnetzen oder VLANs. Hubs und einfache Switches tun das nicht.'],
-    ['Welche Adresse ist die erste und welche die letzte eines Subnetzes?', 'Die erste ist die Netzadresse, die letzte die Broadcastadresse.'],
   ],
 };
 
@@ -266,6 +250,8 @@ export const protokollmodelle = {
     { id: 'o19', type: 'mc', q: 'Auf welcher Schicht arbeitet eine <b>Bridge</b>?', options: ['Schicht 2', 'Schicht 1', 'Schicht 3', 'Schicht 4'], answer: 0, explain: 'Eine Bridge verbindet Netzsegmente anhand von MAC-Adressen, genau wie ein Switch. Damit gehört sie zur Sicherungsschicht.' },
     { id: 'o20', type: 'mc', q: 'Auf welcher Schicht arbeitet ein <b>Repeater</b>?', options: ['Schicht 1', 'Schicht 2', 'Schicht 3', 'Schicht 7'], answer: 0, explain: 'Ein Repeater verstärkt nur das Signal, ohne Adressen auszuwerten. Wie der Hub gehört er zur Bitübertragungsschicht.' },
     { id: 'o21', type: 'mc', q: 'Auf welcher Schicht werden Daten über <b>Portnummern</b> einer Anwendung zugeordnet und in <b>Segmente</b> aufgeteilt?', options: ['Schicht 4', 'Schicht 3', 'Schicht 2', 'Schicht 5'], answer: 0, explain: 'Das ist die Aufgabe der Transportschicht mit TCP und UDP.' },
+    { id: 'o22', type: 'mc', q: 'Wie heißt OSI-Schicht 2 auf Englisch?', options: ['Data Link Layer', 'Network Layer', 'Physical Layer', 'Session Layer'], answer: 0, explain: 'Schicht 1 ist der Physical Layer, Schicht 2 der Data Link Layer und Schicht 3 der Network Layer.' },
+    { id: 'o23', type: 'mc', q: 'Wie heißen die vier Schichten des TCP/IP-Modells von unten nach oben?', options: ['Netzzugang, Internet, Transport, Anwendung', 'Bitübertragung, Sicherung, Vermittlung, Anwendung', 'Netzzugang, Transport, Internet, Anwendung', 'Physical, Network, Session, Application'], answer: 0, explain: 'Netzzugang entspricht OSI 1 und 2, Internet entspricht OSI 3, Transport OSI 4 und Anwendung OSI 5 bis 7.' },
   ],
   pairs: [
     { title: 'OSI-Nummer und Name', items: [['Schicht 1', 'Bitübertragung'], ['Schicht 2', 'Sicherung'], ['Schicht 3', 'Vermittlung'], ['Schicht 4', 'Transport'], ['Schicht 5', 'Sitzung'], ['Schicht 6', 'Darstellung'], ['Schicht 7', 'Anwendung']] },
@@ -275,16 +261,5 @@ export const protokollmodelle = {
   order: [
     { title: 'Sortiere die OSI-Schichten von unten (1) nach oben (7)', items: ['Bitübertragung', 'Sicherung', 'Vermittlung', 'Transport', 'Sitzung', 'Darstellung', 'Anwendung'] },
     { title: 'Sortiere die TCP/IP-Schichten von unten nach oben', items: ['Netzzugang', 'Internet', 'Transport', 'Anwendung'] },
-  ],
-  cards: [
-    ['Wie heißen die OSI-Schichten 1 bis 7?', 'Bitübertragung, Sicherung, Vermittlung, Transport, Sitzung, Darstellung, Anwendung'],
-    ['Wie heißen die OSI-Schichten auf Englisch?', 'Physical, Data Link, Network, Transport, Session, Presentation, Application'],
-    ['Welche Schichten hat das TCP/IP-Modell?', 'Netzzugang, Internet, Transport, Anwendung'],
-    ['Was ist ein SAP?', 'Der Service Access Point, die genormte Schnittstelle zwischen zwei benachbarten Schichten.'],
-    ['Wie heißen die Dateneinheiten auf Schicht 4, 3, 2 und 1?', 'Segment, Paket, Frame, Bits'],
-    ['Auf welchen Schichten arbeiten Hub, Switch und Router?', 'Hub auf Schicht 1, Switch auf Schicht 2, Router auf Schicht 3.'],
-    ['Was sind die transport- und die anwendungsorientierten Schichten?', 'Transportorientiert: Schichten 1 bis 4. Anwendungsorientiert: Schichten 5 bis 7.'],
-    ['Welche Protokolle arbeiten auf Schicht 3 und 4?', 'Schicht 3: IP, ICMP, IPsec. Schicht 4: TCP, UDP.'],
-    ['Auf welchen Schichten arbeiten Repeater und Bridge?', 'Der Repeater auf Schicht 1, die Bridge auf Schicht 2.'],
   ],
 };
