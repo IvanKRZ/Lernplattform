@@ -314,7 +314,7 @@ function viewDaily(s) {
 function viewDiagnose(s) {
   const items = diagItems(s).sort(() => Math.random() - 0.5);
   runItems(app, items, {
-    title: 'Einstufung', xp: 8,
+    title: 'Einstufung', xp: 8, backHref: `#/f/${s.id}`,
     intro: 'Beantworte die Fragen so gut du kannst. Wenn du etwas nicht weißt, rate nicht lange, sondern nimm die Antwort, die dir am plausibelsten erscheint. Nur zwei der 30 Aufgaben sind Rechenaufgaben.',
     onFinish(results, el) {
       const res = {};
@@ -367,7 +367,7 @@ function viewExam(s) {
   function startExam() {
     const items = examItems(s, s.exam.count);
     runItems(app, items, {
-      title: 'Probeklausur', exam: true, minutes: s.exam.minutes, xp: 12,
+      title: 'Probeklausur', exam: true, minutes: s.exam.minutes, xp: 12, backHref: `#/f/${s.id}`,
       onFinish(results, el, meta) {
         clear(el);
         const ok = results.filter(r => r.ok).length;
@@ -377,7 +377,7 @@ function viewExam(s) {
         const open = items.length - results.length;
         add(el, h('div', { class: 'end' },
           h('div', { class: `grade grade-${g}` }, h('span', {}, 'Note'), h('b', {}, g), h('span', {}, gt)),
-          h('p', { class: 'end-score' }, h('b', {}, `${ok} von ${items.length}`), ' Punkten, das sind ', h('b', {}, `${p} %`), `. Bearbeitungszeit: ${plural(Math.max(1, Math.round(meta.seconds / 60)), 'Minute', 'Minuten')}.${open ? ` ${plural(open, 'Aufgabe', 'Aufgaben')} hast du nicht mehr geschafft.` : ''}`),
+          h('p', { class: 'end-score' }, h('b', {}, `${ok} von ${items.length}`), ' Punkten, das sind ', h('b', {}, `${p} %`), `. Bearbeitungszeit: ${plural(Math.max(1, Math.round(meta.seconds / 60)), 'Minute', 'Minuten')}.${meta.skipped ? ` ${plural(meta.skipped, 'Aufgabe', 'Aufgaben')} hast du übersprungen.` : ''}${open - (meta.skipped || 0) > 0 ? ` ${plural(open - (meta.skipped || 0), 'Aufgabe', 'Aufgaben')} hast du nicht mehr geschafft.` : ''}`),
           h('div', { class: 'row' },
             h('button', { class: 'btn btn-primary', onclick: startExam }, 'Neue Probeklausur'),
             h('a', { class: 'btn', href: '#/' }, 'Zur Übersicht')),

@@ -1,5 +1,5 @@
 // Ablauf für eine Folge von Aufgaben: Quiz, Fälle, Diagnose, Klausur
-import { h, add, clear, toast, fmtTime, every } from '../ui.js';
+import { h, add, clear, toast, fmtTime, every, dialog, clearTimers, clearKeys } from '../ui.js';
 import { topicByKey } from './pool.js';
 import { renderItem } from './item.js';
 import * as store from '../store.js';
@@ -12,20 +12,23 @@ import * as store from '../store.js';
 export function runItems(el, items, cfg = {}) {
   clear(el);
   const results = [];
-  let i = 0, combo = 0, xpGained = 0;
+  let i = 0, combo = 0, xpGained = 0, skipped = 0, answered = false;
   const start = Date.now();
   const deadline = cfg.minutes ? start + cfg.minutes * 60e3 : null;
 
   const bar = h('div', { class: 'progress' }, h('i'));
   const meta = h('div', { class: 'run-meta' });
   const stage = h('div', { class: 'stage' });
+  const skipBtn = h('button', { class: 'btn btn-ghost', type: 'button', onclick: () => skip() }, 'Frage überspringen');
+  const abortBtn = h('button', { class: 'btn btn-danger-quiet', type: 'button', onclick: () => abort() }, 'Durchgang abbrechen');
+  const actions = h('div', { class: 'run-actions row' }, skipBtn, abortBtn);
   add(el, ...[
     h('div', { class: 'run-head' },
       h('h2', {}, cfg.title || 'Quiz'),
       meta,
     ),
     cfg.intro ? h('p', { class: 'run-intro' }, cfg.intro) : null,
-    bar, stage,
+    bar, stage, actions,
     h('p', { class: 'kbd-tip' }, 'Tipp: Du kannst mit den Zahlentasten 1 bis 4 antworten und mit der Eingabetaste weitergehen.'),
   ].filter(Boolean));
 
@@ -62,10 +65,31 @@ export function runItems(el, items, cfg = {}) {
       results.forEach(r => { if (r.ok) store.addXP((cfg.xp || 10)); });
     }
     if (xpGained) toast(`${xpGained} Punkte gesammelt`, 'xp');
-    cfg.onFinish ? cfg.onFinish(results, el, { seconds: (Date.now() - start) / 1000, items }) : defaultEnd(el, results, items, cfg);
+    cfg.onFinish ? cfg.onFinish(results, el, { seconds: (Date.now() - start) / 1000, items, skipped }) : defaultEnd(el, results, items, cfg, { skipped });
+  }
+
+  function skip() {
+    if (answered || finished) return;
+    skipped++; i++; show();
+  }
+  async function abort() {
+    if (finished) return;
+    const r = await dialog({
+      title: 'Durchgang abbrechen?',
+      text: cfg.exam
+        ? 'Die Probeklausur wird nicht gewertet, es gibt weder Note noch Punkte. Schon beantwortete Aufgaben bleiben in deinem Lernstand.'
+        : 'Es gibt keine Auswertung. Schon beantwortete Fragen bleiben in deinem Lernstand.',
+      submit: 'Abbrechen und verlassen', cancel: 'Weitermachen', danger: true,
+    });
+    if (!r) return;
+    finished = true;
+    clearTimers(); clearKeys();
+    location.hash = cfg.backHref || '#/';
   }
 
   function show() {
+    answered = false;
+    skipBtn.hidden = false;
     updateMeta();
     if (i >= items.length) return done();
     const item = items[i];
@@ -75,6 +99,7 @@ export function runItems(el, items, cfg = {}) {
       label: `Aufgabe ${i + 1} von ${items.length}`,
       topic: cfg.showTopic ? topicByKey(item.topicKey) : null,
       onAnswer(ok, given, usedHint) {
+        answered = true; skipBtn.hidden = true;
         results.push({ item, ok, given });
         store.record(item.topicKey, ok, item.track ? item.ref : null);
         if (ok) {
@@ -95,14 +120,15 @@ export function runItems(el, items, cfg = {}) {
   return { stop: done };
 }
 
-export function defaultEnd(el, results, items, cfg) {
+export function defaultEnd(el, results, items, cfg, meta = {}) {
   clear(el);
   const ok = results.filter(r => r.ok).length;
   const pct = results.length ? Math.round(ok / results.length * 100) : 0;
   const wrong = results.filter(r => !r.ok);
+  const skipped = meta.skipped || 0;
   add(el, 
     h('div', { class: 'end' },
-      h('p', { class: 'end-score' }, h('b', {}, `${ok} von ${results.length}`), ' richtig, das sind ', h('b', {}, `${pct} %`), '.'),
+      h('p', { class: 'end-score' }, h('b', {}, `${ok} von ${results.length}`), ' richtig, das sind ', h('b', {}, `${pct} %`), '.', skipped ? ` ${skipped} ${skipped === 1 ? 'Frage hast' : 'Fragen hast'} du übersprungen.` : ''),
       h('h2', {}, pct >= 90 ? 'Das sitzt.' : pct >= 70 ? 'Gut gemacht.' : pct >= 50 ? 'Die Grundlage ist da.' : 'Hier lohnt sich Üben.'),
       h('p', { class: 'muted' }, cfg.endNote || 'Richtig beantwortete Fragen legt Lernstack dir in größer werdenden Abständen wieder vor, falsch beantwortete schon morgen.'),
       h('div', { class: 'row center' },
