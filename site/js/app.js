@@ -1,4 +1,5 @@
 import { h, add, clear, clearKeys, clearTimers, toast, dialog, inkOn, pick } from './ui.js';
+import { ICONS } from './icons.js';
 import * as store from './store.js';
 import * as account from './account.js';
 import { subjects, byId } from '../content/subjects.js';
@@ -101,15 +102,27 @@ function modeList() {
   const arcadeBest = Math.max(...['zahlen', 'subnet', 'sonst', 'mix'].map(k => store.getBest(`arcade:${k}`)));
   const due = dueItems(S).length;
   const rows = [
-    [`#/f/${S.id}/runde`, 'Tagesrunde', 'Fällige Wiederholungen aus allen Themen, dazu ein paar neue Fragen und zwei Rechenaufgaben. Etwa zehn Minuten.', due ? `${plural(due, 'Frage', 'Fragen')} fällig` : 'nichts fällig'],
-    [`#/f/${S.id}/klausur`, 'Probeklausur', `${S.exam.count} Aufgaben in ${S.exam.minutes} Minuten, ohne Rückmeldung zwischendurch. Am Ende steht eine Note nach dem IHK-Schlüssel.`, examBest ? `bestes Ergebnis ${examBest} %` : 'noch nicht geschrieben'],
-    [`#/f/${S.id}/arcade`, 'Rechentraining', 'Subnetting, Zahlensysteme und weitere Rechnungen, wahlweise auf Zeit. Bei einem Fehler siehst du den vollständigen Rechenweg.', arcadeBest ? `Rekord ${arcadeBest} Punkte` : 'noch kein Rekord'],
-    [`#/f/${S.id}/reise`, 'Paketreise', 'Du verfolgst ein Paket Hop für Hop durchs Netz und entscheidest an jeder Station, was mit MAC-Adressen, IP-Adressen und Ports passiert.', plural(S.journeys.length, 'Strecke', 'Strecken')],
-    [`#/f/${S.id}/faelle`, 'Fehlersuche', 'Störungsmeldungen mit Befehlsausgaben wie ipconfig oder ping. Du grenzt die Ursache ein, wie im Support.', plural(S.cases.length, 'Fall', 'Fälle')],
-    [`#/f/${S.id}/diagnose`, 'Einstufung', '30 Fragen, drei aus jedem Thema. Das Ergebnis zeigt, welche Themen schon sitzen und wo du ansetzen solltest.', diag ? `zuletzt ${diagAvg(diag)} % richtig` : 'noch nicht gemacht'],
+    [`#/f/${S.id}/runde`, 'Tagesrunde', 'Fällige Wiederholungen aus allen Themen, dazu ein paar neue Fragen und zwei Rechenaufgaben. Etwa zehn Minuten.', due ? `${plural(due, 'Frage', 'Fragen')} fällig` : 'nichts fällig', 'calendar-check', '#5B3FD6'],
+    [`#/f/${S.id}/klausur`, 'Probeklausur', `${S.exam.count} Aufgaben in ${S.exam.minutes} Minuten, ohne Rückmeldung zwischendurch. Am Ende steht eine Note nach dem IHK-Schlüssel.`, examBest ? `bestes Ergebnis ${examBest} %` : 'noch nicht geschrieben', 'exam', '#E07020'],
+    [`#/f/${S.id}/arcade`, 'Rechentraining', 'Subnetting, Zahlensysteme und weitere Rechnungen, wahlweise auf Zeit. Bei einem Fehler siehst du den vollständigen Rechenweg.', arcadeBest ? `Rekord ${arcadeBest} Punkte` : 'noch kein Rekord', 'calculator', '#2D6CDF'],
+    [`#/f/${S.id}/reise`, 'Paketreise', 'Du verfolgst ein Paket Hop für Hop durchs Netz und entscheidest an jeder Station, was mit MAC-Adressen, IP-Adressen und Ports passiert.', plural(S.journeys.length, 'Strecke', 'Strecken'), 'package', '#1A9AA0'],
+    [`#/f/${S.id}/faelle`, 'Fehlersuche', 'Störungsmeldungen mit Befehlsausgaben wie ipconfig oder ping. Du grenzt die Ursache ein, wie im Support.', plural(S.cases.length, 'Fall', 'Fälle'), 'bug', '#8A5A3C'],
+    [`#/f/${S.id}/diagnose`, 'Einstufung', '30 Fragen, drei aus jedem Thema. Das Ergebnis zeigt, welche Themen schon sitzen und wo du ansetzen solltest.', diag ? `zuletzt ${diagAvg(diag)} % richtig` : 'noch nicht gemacht', 'target', '#2E8B57'],
   ];
-  return h('ul', { class: 'modes' }, rows.map(([href, title, text, stat]) => h('li', {},
-    h('a', { href }, h('b', {}, title), h('span', { class: 'modes-text' }, text), h('span', { class: 'modes-stat' }, stat)))));
+  return tiles(rows.map(([href, title, text, stat, icon, color]) => ({ href, title, text, stat, icon, color })));
+}
+// Kacheln mit Grafik: Fläche in Kapitelfarbe, Phosphor-Icon (duotone), darunter Titel und Text
+function tiles(list, { small = false } = {}) {
+  return h('ul', { class: `tiles${small ? ' tiles-s' : ''}` }, list.map((t, i) => h('li', { class: small ? '' : i === 0 ? 'tile-wide' : i === list.length - 1 && list.length === 6 ? 'tile-wide tile-full' : '' },
+    h('a', { class: 'tile', href: t.href, style: { '--c': t.color, '--on': inkOn(t.color) } },
+      h('span', { class: 'tile-art', 'aria-hidden': 'true' }, h('span', { class: 'tile-icon', html: ICONS[t.icon] || '' })),
+      h('span', { class: 'tile-body' },
+        h('b', {}, t.title),
+        h('span', { class: 'tile-text' }, t.text),
+        t.stat ? h('span', { class: 'tile-stat' }, t.stat) : null)))));
+}
+function tilesSec(title, note, list) {
+  return h('section', { class: 'tiles-wrap' }, h('div', { class: 'tiles-head' }, h('h2', {}, title), note ? h('p', {}, note) : null), list);
 }
 function diagAvg(d) {
   const v = Object.values(d.result || {}).filter(x => typeof x === 'number');
@@ -157,6 +170,7 @@ function viewLanding() {
         demo,
       ),
     ),
+    tilesSec('Übungsformen', 'Neben den Fragen zu jedem Thema gibt es Übungen quer durch das Fach.', modeList()),
     sec('So arbeitest du mit Lernstack', null,
       h('ol', { class: 'steps' },
         h('li', {}, h('b', {}, 'Einstufung.'), ' 30 Fragen aus allen Themen, etwa 15 Minuten. Danach siehst du pro Thema, was schon sitzt und wo Lücken sind.'),
@@ -164,7 +178,6 @@ function viewLanding() {
         h('li', {}, h('b', {}, 'Probeklausur.'), ` ${S.exam.count} gemischte Aufgaben in ${S.exam.minutes} Minuten, benotet nach dem IHK-Schlüssel, mit allen Lösungen und Rechenwegen zum Nachlesen.`),
       )),
     sec('Inhalt', `${S.topics.length} Themen aus der Netzwerktechnik, jeweils mit Lernseite, Fragen und Übungen.`, tocList(S.topics, { note: t => `${t.questions.length} Fragen${t.gens.length ? ' und Rechenaufgaben' : ''}`, value: () => null })),
-    sec('Übungsformen', 'Neben den Fragen zu jedem Thema gibt es Übungen quer durch das Fach.', modeList()),
   );
   app.querySelectorAll('.landing ~ .sec .state').forEach(e => e.remove());
 }
@@ -214,10 +227,10 @@ function viewToday() {
       ),
       week(),
     ),
+    tilesSec('Übungsformen', 'Quer durch alle Themen.', modeList()),
     nextUp.length ? sec('Als Nächstes', 'Vorschläge aus deinem Lernstand.',
       h('ul', { class: 'next' }, nextUp.map(({ t, text }) => h('li', {}, h('a', { href: `#/f/${S.id}/t/${t.id}` }, tab(t), h('span', {}, h('b', {}, t.title), h('span', {}, text))))))) : null,
     sec('Stand je Thema', LEGEND, tocList(S.topics, { desc: false })),
-    sec('Übungsformen', 'Quer durch alle Themen.', modeList()),
   );
 }
 
@@ -229,9 +242,9 @@ function viewSubject(s) {
       h('h1', {}, s.title),
       h('p', { class: 'lead' }, 'Zehn Themen, die aufeinander aufbauen. Jedes hat eine Lernseite mit Beispielen und Rechenwegen, dazu Fragen, Zuordnungs- und Rechenaufgaben. Am Stand rechts siehst du, was sitzt.'),
     ),
+    tilesSec('Übungsformen', 'Diese Übungen mischen Aufgaben aus allen Themen.', modeList()),
     sec('Themen', LEGEND, tocList(s.topics),
       diag ? h('p', { class: 'small muted' }, h('a', { href: `#/f/${s.id}/diagnose/ergebnis` }, 'Letztes Ergebnis der Einstufung ansehen')) : null),
-    sec('Übungsformen', 'Diese Übungen mischen Aufgaben aus allen Themen.', modeList()),
   );
 }
 
@@ -252,10 +265,10 @@ function viewTopic(s, t) {
   const slug = x => 'a-' + x.toLowerCase().replace(/[^a-z0-9äöüß]+/g, '-');
   const jump = id => e => { e.preventDefault(); document.getElementById(id)?.scrollIntoView({ behavior: 'smooth' }); };
   const actions = [
-    ['quiz', 'Quiz', `10 Fragen${t.gens.length ? ', einige davon zum Rechnen' : ''}. Fällige und neue Fragen kommen zuerst.`],
-    t.pairs?.length && ['zuordnen', 'Zuordnen', 'Begriffe und Bedeutungen zusammenbringen'],
-    t.order?.length && ['reihenfolge', 'Reihenfolge', 'Schritte in die richtige Reihenfolge bringen'],
-    t.gens.length && ['rechnen', 'Rechnen', 'Rechenaufgaben ohne Zeitdruck, mit Rechenweg'],
+    ['quiz', 'Quiz', `10 Fragen${t.gens.length ? ', einige davon zum Rechnen' : ''}. Fällige und neue Fragen kommen zuerst.`, 'question', '#5B3FD6'],
+    t.pairs?.length && ['zuordnen', 'Zuordnen', 'Begriffe und Bedeutungen zusammenbringen', 'arrows-left-right', '#1A9AA0'],
+    t.order?.length && ['reihenfolge', 'Reihenfolge', 'Schritte in die richtige Reihenfolge bringen', 'list-numbers', '#E07020'],
+    t.gens.length && ['rechnen', 'Rechnen', 'Rechenaufgaben ohne Zeitdruck, mit Rechenweg', 'calculator', '#2D6CDF'],
   ].filter(Boolean);
   const prev = s.topics[no - 2], next = s.topics[no];
   add(app,
@@ -269,8 +282,8 @@ function viewTopic(s, t) {
       h('article', { class: 'learn' },
         t.learn.map((part, i) => h('section', { id: slug(part.h) }, h('h2', {}, h('span', { class: 'sec-no' }, `${no}.${i + 1}`), part.h), h('div', { class: 'prose', html: part.html }))),
         h('div', { class: 'learn-end' },
-          h('p', {}, 'Lesen allein reicht nicht. Was du abrufen kannst, zeigt das Quiz.'),
-          h('a', { class: 'btn btn-primary', href: `${base}/quiz` }, 'Quiz zu diesem Thema starten'),
+          h('p', {}, 'Lesen allein reicht nicht. Was du abrufen kannst, zeigen die Übungen.'),
+          tiles(actions.map(([id, title, text, icon, color]) => ({ href: `${base}/${id}`, title, text, icon, color })), { small: true }),
         ),
         h('nav', { class: 'pager', 'aria-label': 'Benachbarte Themen' },
           prev ? h('a', { href: `#/f/${s.id}/t/${prev.id}` }, h('small', {}, `Thema ${no - 1}`), prev.title) : h('span'),

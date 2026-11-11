@@ -51,6 +51,7 @@ Skala (rem): 0.875 · 1.0625 (Text, 17 px) · 1.1875 (Vorspann) · 1.5 (h2) · 2
 ## Komponenten
 
 - **Abschnitt** (`.sec`): Karte, Überschrift links, Inhalt rechts. Unter 860 px untereinander.
+- **Übungskacheln** (`.tiles`, `.tile`): stehen direkt unter dem Seitenkopf von Startseite und Fachseite sowie am Ende jeder Lernseite (`.tiles-s`). Oben eine Grafikfläche im Verlauf der Kapitelfarbe mit großem Icon und zwei hellen Kreisen, darunter Titel, Text und Stand als Pille. Die erste Kachel ist doppelt so breit, bei sechs Kacheln auch die letzte. Hover hebt die Kachel an und kippt das Icon.
 - **Inhaltsverzeichnis** (`.toc-list`): Zeilen mit Kapitel-Badge, Titel, Beschreibung, Balken und Stand. Hover in `--brand-tint`.
 - **Griffregister** (`.reg`): ab 1240 px fest am linken Rand, darunter als Leiste über dem Seitentitel.
 - **Lernseite** (`.learn`): nummerierte Abschnitte mit farbigem Nummern-Badge. `.merke` ist die gelbe Hinweisbox, `.rechnung` der Rechenweg auf Karopapier, Tabellen mit abgerundetem Rahmen und getönter Kopfzeile.
@@ -62,7 +63,7 @@ Skala (rem): 0.875 · 1.0625 (Text, 17 px) · 1.1875 (Vorspann) · 1.5 (h2) · 2
 
 ## Bilder und Icons
 
-Keine Fotos, keine Icon-Bibliothek. Netzsymbole in der Paketreise sind einfache Strichzeichnungen auf Karopapier.
+Keine Fotos. Icons kommen aus den **Phosphor Icons** (Gewicht duotone, MIT-Lizenz, Lizenztext in `site/icons/LICENSE-phosphor.txt`), eingebettet als SVG-Strings in `site/js/icons.js` und über `currentColor` gefärbt. Netzsymbole in der Paketreise sind einfache Strichzeichnungen auf Karopapier.
 
 ## Sprache
 
