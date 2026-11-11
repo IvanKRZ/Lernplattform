@@ -3,7 +3,7 @@ import { h, add, shuffle, normalize, onKey, reportButton } from '../ui.js';
 
 // Einheitliches Format erzeugen
 export function fromQuestion(q, topicKey) {
-  return { ...q, ref: `${topicKey}/${q.id}`, topicKey };
+  return { ...q, ref: `${topicKey}/${q.id}`, topicKey, track: true };
 }
 export function fromGen(gen, task, topicKey) {
   return { type: 'input', q: task.q, answer: task.answer, check: task.check, explain: task.explain, hint: task.hint, ref: `${topicKey}/gen:${gen.id}`, topicKey, gen: true };
@@ -27,7 +27,7 @@ function checkInput(item, val) {
  * @param item  Aufgabe
  * @param opts  { exam: bool (kein Feedback), onAnswer(ok, given), onNext() }
  */
-export function renderItem(item, { exam = false, onAnswer, onNext, label } = {}) {
+export function renderItem(item, { exam = false, onAnswer, onNext, label, topic, focus = true } = {}) {
   const root = h('div', { class: 'item' });
   const opts = (item.options || []).map((t, i) => ({ t, i }));
   const shown = item.type === 'mc' || item.type === 'multi' ? shuffle(opts) : opts;
@@ -38,6 +38,7 @@ export function renderItem(item, { exam = false, onAnswer, onNext, label } = {})
   add(root, 
     h('div', { class: 'item-head' },
       label ? h('span', { class: 'item-label' }, label) : null,
+      topic ? h('span', { class: 'item-topic', style: { '--c': topic.color } }, topic.title) : null,
       h('span', { class: `item-kind kind-${item.type}` }, { mc: 'Eine Antwort ist richtig.', multi: 'Mehrere Antworten sind richtig.', tf: 'Stimmt das?', input: 'Trage die Antwort ein.' }[item.type]),
     ),
     h('div', { class: 'item-q', html: item.q }),
@@ -145,7 +146,7 @@ export function renderItem(item, { exam = false, onAnswer, onNext, label } = {})
     const hintBtn = item.hint ? h('button', { class: 'btn btn-ghost', onclick: () => { usedHint = true; hintBox.innerHTML = '<b>Tipp:</b> ' + item.hint; hintBtn.remove(); inp.focus(); } }, 'Tipp') : null;
     inp.addEventListener('keydown', e => { if (e.key === 'Enter') { e.preventDefault(); e.stopPropagation(); submit.click(); } });
     add(body, h('div', { class: 'row' }, inp, submit, hintBtn), hintBox);
-    setTimeout(() => inp.focus(), 30);
+    if (focus) setTimeout(() => inp.focus(), 30);
   }
 
   // Enter = Weiter nach Feedback

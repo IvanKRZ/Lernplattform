@@ -3,6 +3,7 @@
 export const kabel = {
   id: 'kabel', title: 'Kabel und Übertragung', color: '#8A5A3C',
   blurb: 'Kupfer und Glasfaser, strukturierte Verkabelung, Störungen und wie sich Geräte das Medium teilen.',
+  pruefung: 'Kabelkategorien, Schirmung, Glasfasertypen und die strukturierte Verkabelung werden vor allem in Teil 1 abgefragt, oft als Auswahl eines passenden Mediums für eine beschriebene Umgebung.',
   gens: ['lwl'],
   learn: [
     {
@@ -50,7 +51,7 @@ export const kabel = {
       <tr><td>Singlemode</td><td>geringe Dämpfung, kaum Laufzeitunterschiede, große Entfernungen, hohe Bandbreite</td><td>teurer Laser nötig, aufwendige Herstellung, Stecker und Spleiße müssen sehr genau sitzen</td></tr>
       <tr><td>Multimode</td><td>einfacher herzustellen, einfachere Verbindungstechnik wegen des dickeren Kerns</td><td>höhere Dämpfung, geringere Bandbreite, nur kürzere Strecken</td></tr></table>
       <p>Glasfaser allgemein hat große Vorteile: hohe Übertragungsraten, große Reichweite, keine Störung durch elektromagnetische Felder, keine Probleme mit Strom oder Blitzschlag und hohe Abhörsicherheit. Dafür ist sie teurer als Kupfer, die Installation braucht Fachwissen und Spezialwerkzeug, die Stecker sind empfindlich gegen Schmutz, und wird das Kabel zu stark geknickt, kann die Faser brechen. Strom für Geräte (Power over Ethernet) lässt sich über Glasfaser nicht übertragen.</p>
-      <div class="merke"><b>Hinweis zu Reichweiten:</b> Manche Lernkarten nennen für Multimode bis zu 2 km und für Singlemode bis zu 10 km. Die tatsächliche Reichweite hängt stark von der Übertragungsrate ab. Für eure Klausur gelten die Werte aus dem Unterricht: Multimode bis ca. 550 m, Singlemode viele Kilometer.</div>`,
+      <div class="merke"><b>Hinweis zu Reichweiten:</b> Manche Lehrmaterialien nennen für Multimode bis zu 2 km und für Singlemode bis zu 10 km. Die tatsächliche Reichweite hängt stark von der Übertragungsrate und vom Fasertyp ab. Als Faustregel für die Prüfung: Multimode bis etwa 550 m, Singlemode viele Kilometer. Steht in der Aufgabe oder im Tabellenbuch ein konkreter Wert, gilt der.</div>`,
     },
     {
       h: 'Dämpfung und Störungen',
@@ -112,6 +113,7 @@ export const kabel = {
 export const topologien = {
   id: 'topologien', title: 'Topologien', color: '#D9A400',
   blurb: 'Wie Geräte und Standorte miteinander verbunden sind: Stern, Ring, Bus, Masche und mehr.',
+  pruefung: 'Topologien tauchen meist als kurze Verständnisfrage auf: Vor- und Nachteile nennen oder die Zahl der Verbindungen bei Vollvermaschung berechnen.',
   gens: ['mesh'],
   learn: [
     {
@@ -162,6 +164,7 @@ export const topologien = {
 export const switching = {
   id: 'switch', title: 'Switch', color: '#1A9AA0',
   blurb: 'Wie ein Switch MAC-Adressen lernt und Frames gezielt weiterleitet, und was ihn vom Hub unterscheidet.',
+  pruefung: 'Wie ein Switch lernt und weiterleitet, ist Grundlage für fast jede Netzwerkaufgabe in Teil 1 und Teil 2. Die Abgrenzung zu Hub und Router solltest du in einem Satz erklären können.',
   gens: [],
   learn: [
     {
@@ -194,7 +197,7 @@ export const switching = {
       h: 'Hub und Switch im Vergleich',
       html: `<p>Ein <b>Hub</b> arbeitet auf Schicht 1. Er schickt jedes Signal an alle Ports. Alle Geräte teilen sich die Leitung, und das langsamste Gerät bestimmt das Tempo. Es kann zu Kollisionen kommen.</p>
       <p>Ein <b>Switch</b> arbeitet auf Schicht 2. Er verbindet zwei Ports direkt miteinander. Jede Verbindung läuft mit voller Geschwindigkeit und im Vollduplex. An einem Switch-Port mit Vollduplex gibt es keine Kollisionen.</p>
-      <p>Im Unterricht verwendet ihr den Netgear GS308: 8 Gigabit-Ports, Auto-MDI/MDIX, Plug-and-Play, Layer 2 und ohne Lüfter.</p>`,
+      <p>Ein typischer Vertreter ist der Netgear GS308: 8 Gigabit-Ports, Auto-MDI/MDIX, Plug-and-Play, Layer 2 und ohne Lüfter.</p>`,
     },
   ],
   questions: [
@@ -222,6 +225,7 @@ export const switching = {
 export const vlan = {
   id: 'vlan', title: 'VLAN', color: '#2E8B57',
   blurb: 'Ein physisches Netz in mehrere logische Netze aufteilen, mit und ohne Tags.',
+  pruefung: 'VLANs sind ein Schwerpunkt in Teil 2 für die Fachrichtung Systemintegration: Ports zuordnen, Tagging nach IEEE 802.1Q erklären, Access- und Trunk-Ports unterscheiden und Inter-VLAN-Routing begründen.',
   gens: [],
   learn: [
     {
@@ -233,8 +237,8 @@ export const vlan = {
     {
       h: 'Portbasierte VLANs',
       html: `<p>Bei einem portbasierten VLAN wird jeder Port des Switches genau einem VLAN zugeordnet. Man spricht auch von einem <b>Access-Port</b>. Nur Geräte im selben VLAN können direkt miteinander kommunizieren.</p>
-      <div class="rechnung"><p>Beispiel aus dem Unterricht: Switch A</p><p>Port 1 bis 4 gehören zu VLAN 1, Port 5 bis 8 zu VLAN 2.<br>PC A-1 an Port 1 und PC A-2 an Port 2 können sich erreichen. PC A-5 an Port 5 und PC A-6 an Port 6 auch. Zwischen den beiden Gruppen geht nichts.</p></div>
-      <p>Werden die Ports von Hand fest einem VLAN zugeordnet, spricht man von <b>statischen VLANs</b>. Das portbasierte VLAN aus dem Unterricht ist so ein statisches VLAN. Bei <b>dynamischen VLANs</b> ordnet der Switch ein Gerät automatisch einem VLAN zu, zum Beispiel anhand seiner MAC-Adresse. Steckt man den Laptop dann an einen anderen Port, landet er trotzdem im richtigen VLAN.</p>
+      <div class="rechnung"><p>Beispiel: Switch A</p><p>Port 1 bis 4 gehören zu VLAN 1, Port 5 bis 8 zu VLAN 2.<br>PC A-1 an Port 1 und PC A-2 an Port 2 können sich erreichen. PC A-5 an Port 5 und PC A-6 an Port 6 auch. Zwischen den beiden Gruppen geht nichts.</p></div>
+      <p>Werden die Ports von Hand fest einem VLAN zugeordnet, spricht man von <b>statischen VLANs</b>. Das portbasierte VLAN aus dem Beispiel ist so ein statisches VLAN. Bei <b>dynamischen VLANs</b> ordnet der Switch ein Gerät automatisch einem VLAN zu, zum Beispiel anhand seiner MAC-Adresse. Steckt man den Laptop dann an einen anderen Port, landet er trotzdem im richtigen VLAN.</p>
       <p>Will man zwei Switche portbasiert verbinden, braucht man <b>für jedes VLAN ein eigenes Kabel</b>. Bei zwei VLANs sind das also zwei Kabel, zum Beispiel von Port 4 zu Port 4 für VLAN 1 und von Port 8 zu Port 8 für VLAN 2.</p>`,
     },
     {

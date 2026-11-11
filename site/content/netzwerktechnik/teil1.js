@@ -5,6 +5,7 @@
 export const zahlensysteme = {
   id: 'zahlensysteme', title: 'Zahlensysteme', color: '#E07020',
   blurb: 'Wie Computer zählen: binär, dezimal und hexadezimal, dazu der Unterschied zwischen kB und KiB.',
+  pruefung: 'Umrechnungen zwischen Binär, Dezimal und Hexadezimal sowie Speichergrößen (kB und KiB) gehören zum Grundstoff für Teil 1 der Abschlussprüfung. In Teil 2 brauchst du sie als Werkzeug, etwa beim Subnetting und bei MAC- und IPv6-Adressen.',
   gens: ['dec2bin', 'bin2dec', 'hex2dec', 'dec2hex', 'bin2hex', 'hex2bin', 'praefix'],
   learn: [
     {
@@ -37,7 +38,7 @@ export const zahlensysteme = {
     {
       h: 'Dezimal in Hexadezimal: das Restwertverfahren',
       html: `<p>Teile die Zahl immer wieder durch 16 und schreibe jeweils den Rest auf. Wenn das Ergebnis 0 ist, liest du die Reste von unten nach oben. Reste über 9 schreibst du als Buchstaben.</p>
-      <div class="rechnung"><p>Beispiel aus dem Unterricht: 304</p><p>304 : 16 = 19, Rest 0<br>19 : 16 = 1, Rest 3<br>1 : 16 = 0, Rest 1</p><p>Von unten gelesen: <b>130h</b></p></div>`,
+      <div class="rechnung"><p>Beispiel: 304</p><p>304 : 16 = 19, Rest 0<br>19 : 16 = 1, Rest 3<br>1 : 16 = 0, Rest 1</p><p>Von unten gelesen: <b>130h</b></p></div>`,
     },
     {
       h: 'Binär und Hexadezimal: der schnelle Weg',
@@ -87,6 +88,7 @@ export const zahlensysteme = {
 export const subnetting = {
   id: 'subnetting', title: 'Subnetting', color: '#2D6CDF',
   blurb: 'Ein großes IP-Netz in kleinere Netze aufteilen und mehrere kleine wieder zusammenfassen.',
+  pruefung: 'Subnetting kommt in Teil 1 und Teil 2 regelmäßig vor, meist als Rechenaufgabe mit Netzplan: Netzadresse, Broadcast, Hostbereich und passende Maske bestimmen. Übe, bis du die Blockgrößen ohne Nachdenken parat hast.',
   gens: ['cidr2mask', 'mask2cidr', 'hosts', 'netid', 'broadcast', 'firsthost', 'lasthost', 'split', 'needhosts', 'whichsubnet', 'nthsubnet', 'supernet'],
   learn: [
     {
@@ -172,6 +174,7 @@ export const subnetting = {
 export const protokollmodelle = {
   id: 'protokollmodelle', title: 'OSI- und TCP/IP-Modell', color: '#2E8B57',
   blurb: 'Zwei Modelle, die Netzwerkkommunikation in Schichten aufteilen, und was auf welcher Schicht passiert.',
+  pruefung: 'Schichten zuordnen ist eine typische Aufgabe in Teil 1: Welches Gerät, welches Protokoll und welche Adresse gehört auf welche Schicht? In Teil 2 wird das Modell bei der Fehlersuche vorausgesetzt.',
   gens: [],
   learn: [
     {

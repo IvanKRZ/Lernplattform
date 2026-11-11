@@ -1,5 +1,5 @@
 // Paketreise: Netz als SVG, Paket wandert Schritt für Schritt, an jeder Station eine Frage
-import { h, add, clear, shuffle, confetti } from '../ui.js';
+import { h, add, clear, shuffle } from '../ui.js';
 import * as store from '../store.js';
 
 const ICON = {
@@ -129,7 +129,6 @@ export function playJourney(el, subject, j) {
   }
   function finish() {
     clear(panel);
-    if (ok === total) confetti(60);
     add(panel, h('div', { class: 'end small-end' },
       h('h3', {}, `${ok} von ${total} Fragen richtig beantwortet.`),
       h('div', { class: 'row center' },
